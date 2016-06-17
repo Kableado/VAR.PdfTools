@@ -419,6 +419,7 @@ namespace VAR.PdfTools
                         sbString.Append((char)character);
                         if (depth == 0)
                         {
+                            NextChar();
                             break;
                         }
                     }
@@ -534,15 +535,15 @@ namespace VAR.PdfTools
                 }
                 else if (character == '#')
                 {
-                    StringBuilder sbHex = new StringBuilder();
-                    sbHex.Append((char)character);
-                    if (NextChar() == false)
-                    {
-                        throw new Exception("Unexpected end of string and file");
-                    }
-                    sbHex.Append((char)character);
-                    byte newChar = Convert.ToByte(sbHex.ToString(), 16);
-                    sbName.Append((char)newChar);
+                    byte realChar = 0;
+                    NextChar();
+                    character = PeekChar();
+                    realChar = (byte)(ByteHexValue(character) * 16);
+                    NextChar();
+                    character = PeekChar();
+                    realChar += (byte)ByteHexValue(character);
+                    NextChar();
+                    sbName.Append((char)realChar);
                 }
                 else if (character > 0x20 && character < 0x7F)
                 {
@@ -723,7 +724,39 @@ namespace VAR.PdfTools
                     string token = ParseToken();
                     if (token == "startxref")
                     {
+                        // FIXME: Ignoring startxref for now
+                        SkipEndOfLine();
+                        SkipToEndOfLine();
+                        SkipEndOfLine();
+                        SkipToEndOfLine();
+                        SkipEndOfLine();
+                        SkipWhitespace();
+                        continue;
+                    }
+                    if (token == "xref")
+                    {
                         // FIXME: Ignoring xref for now
+                        SkipEndOfLine();
+                        IPdfElement objNumber = ParseNumber();
+                        SkipWhitespace();
+                        objNumber = ParseNumber();
+                        SkipEndOfLine();
+                        PdfInteger refNumber = objNumber as PdfInteger;
+                        for (int i = 0; i < refNumber.Value; i++)
+                        {
+                            SkipToEndOfLine();
+                            SkipEndOfLine();
+                        }
+                        continue;
+                    }
+                    if (token == "trailer")
+                    {
+                        // FIXME: Ignoring trailer for now
+                        SkipEndOfLine();
+                        ParseElement();
+                        SkipWhitespace();
+
+                        SkipToEndOfLine();
                         SkipEndOfLine();
                         SkipToEndOfLine();
                         SkipEndOfLine();
