@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VAR.PdfTools", "VAR.PdfTools\VAR.PdfTools.csproj", "{EB7E003A-6A95-4002-809F-926C7C8A11E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VAR.PdfTools.Workbench", "VAR.PdfTools.Workbench\VAR.PdfTools.Workbench.csproj", "{A5825D8E-9F81-49E0-B610-8AE5E46D02EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EB7E003A-6A95-4002-809F-926C7C8A11E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB7E003A-6A95-4002-809F-926C7C8A11E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB7E003A-6A95-4002-809F-926C7C8A11E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB7E003A-6A95-4002-809F-926C7C8A11E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5825D8E-9F81-49E0-B610-8AE5E46D02EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5825D8E-9F81-49E0-B610-8AE5E46D02EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5825D8E-9F81-49E0-B610-8AE5E46D02EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5825D8E-9F81-49E0-B610-8AE5E46D02EA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
