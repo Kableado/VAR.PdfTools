@@ -309,9 +309,9 @@ namespace VAR.PdfTools
         {
             if (
                 PeekNextChar(0) == 'n' &&
-                PeekNextChar(0) == 'u' &&
-                PeekNextChar(0) == 'l' &&
-                PeekNextChar(0) == 'l'
+                PeekNextChar(1) == 'u' &&
+                PeekNextChar(2) == 'l' &&
+                PeekNextChar(3) == 'l'
                 )
             {
                 NextChar();
