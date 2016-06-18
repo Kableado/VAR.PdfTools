@@ -56,6 +56,33 @@ namespace VAR.PdfTools
             return memStream.ToArray();
         }
 
+        private bool TestMarker(long position, char[] marker)
+        {
+            for(int i = 0; i < marker.Length; i++)
+            {
+                if ((position + i) >= _stream.Length) { return false; }
+                if(_stream[position+i] != marker[i]) { return false; }
+            }
+            return true;
+        }
+
+        private long MeasureToMarkers(char[][] markers)
+        {
+            long position = _streamPosition;
+            do
+            {
+                foreach(char[] marker in markers)
+                {
+                    if (TestMarker(position, marker))
+                    {
+                        return (position - _streamPosition);
+                    }
+                }
+                position++;
+            } while (position < _stream.Length);
+            return 0;
+        }
+
         private byte PeekChar()
         {
             if (_streamPosition >= _stream.Length)
@@ -107,9 +134,11 @@ namespace VAR.PdfTools
 
         private bool IsEndOfLine(byte character)
         {
+            byte lineFeed = 0x0A;
+            byte carriageReturn = 0x0D;
             if (
-                character == 0x0A || // Line Feed (LF)
-                character == 0x0D || // Carriage Return (CR)
+                character == lineFeed ||
+                character == carriageReturn ||
                 false)
             {
                 return true;
@@ -174,7 +203,7 @@ namespace VAR.PdfTools
                 }
                 return;
             }
-            if (PeekChar() != lineFeed)
+            if (PeekChar() == lineFeed)
             {
                 NextChar();
                 return;
@@ -687,12 +716,23 @@ namespace VAR.PdfTools
                             {
                                 throw new Exception(string.Format("Stream after a not dictionary element at: {0}", _streamPosition));
                             }
-                            if (streamDict.Values.ContainsKey("Length") == false)
-                            {
-                                throw new Exception(string.Format("Dictionary of stream does not specify Lenght at: {0}", _streamPosition));
-                            }
-                            long length = ((PdfInteger)streamDict.Values["Length"]).Value;
                             SkipEndOfLine();
+                            long length;
+                            if (streamDict.Values.ContainsKey("Length") && streamDict.Values["Length"] is PdfInteger)
+                            {
+                                length = ((PdfInteger)streamDict.Values["Length"]).Value;
+                            }
+                            else
+                            {
+                                byte lineFeed = 0x0A;
+                                byte carriageReturn = 0x0D;
+                                length = MeasureToMarkers(new char[][] {
+                                    new char[] {(char)carriageReturn, (char)lineFeed, 'e', 'n', 'd', 's', 't', 'r', 'e', 'a', 'm'},
+                                    new char[] {(char)lineFeed, 'e', 'n', 'd', 's', 't', 'r', 'e', 'a', 'm'},
+                                    new char[] {'e', 'n', 'd', 's', 't', 'r', 'e', 'a', 'm', (char)lineFeed},
+                                    new char[] {'e', 'n', 'd', 's', 't', 'r', 'e', 'a', 'm', (char)carriageReturn, (char)lineFeed},
+                                });
+                            }
                             byte[] streamBody = GetRawData(length);
                             SkipEndOfLine();
                             endToken = ParseToken();
