@@ -84,6 +84,29 @@ namespace VAR.PdfTools
         public PdfElementTypes Type { get; private set; } = PdfElementTypes.Stream;
         public PdfDictionary Dictionary { get; set; }
         public byte[] Data { get; set; }
+
+        public byte[] OriginalData { get; set; }
+        public IPdfElement OriginalFilter { get; set; }
+
+        public string GetParamAsString(string name)
+        {
+            if(Dictionary.Values.ContainsKey(name) == false) { return null; }
+
+            IPdfElement value = Dictionary.Values[name];
+            if (value is PdfArray)
+            {
+                value = ((PdfArray)value).Values[0];
+            }
+            if (value is PdfName)
+            {
+                return ((PdfName)value).Value;
+            }
+            if (value is PdfString)
+            {
+                return ((PdfString)value).Value;
+            }
+            return null;
+        }
     }
 
     public class PdfObject : IPdfElement

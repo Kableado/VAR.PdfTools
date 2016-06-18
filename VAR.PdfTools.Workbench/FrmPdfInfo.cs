@@ -72,7 +72,7 @@ namespace VAR.PdfTools.Workbench
             {
                 string.Format("Number of Objects: {0}", nObjects),
                 string.Format("Number of Streams: {0}", nStreams),
-                string.Format("Stream Filters: {0}", string.Join(", ", streamFilters.Distinct().ToArray())),
+                string.Format("Unsuported Stream Filters: {0}", string.Join(", ", streamFilters.Distinct().ToArray())),
             };
 
         }
