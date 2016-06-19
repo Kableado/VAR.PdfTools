@@ -32,7 +32,7 @@ namespace VAR.PdfTools
     public class PdfInteger : IPdfElement
     {
         public PdfElementTypes Type { get; private set; } = PdfElementTypes.Integer;
-        public int Value { get; set; }
+        public long Value { get; set; }
     }
 
     public class PdfReal : IPdfElement
@@ -104,6 +104,22 @@ namespace VAR.PdfTools
             if (value is PdfString)
             {
                 return ((PdfString)value).Value;
+            }
+            return null;
+        }
+
+        public long? GetParamAsInt(string name)
+        {
+            if (Dictionary.Values.ContainsKey(name) == false) { return null; }
+
+            IPdfElement value = Dictionary.Values[name];
+            if (value is PdfArray)
+            {
+                value = ((PdfArray)value).Values[0];
+            }
+            if (value is PdfInteger)
+            {
+                return ((PdfInteger)value).Value;
             }
             return null;
         }

@@ -32,11 +32,10 @@ namespace VAR.PdfTools
             MemoryStream msOutput = new MemoryStream();
 
             // It seems to work when skipping the first two bytes.
-            byte header;   // 0x30 0x59
+            byte header;
             header = (byte)msInput.ReadByte();
-            //Debug.Assert(header == 48);
             header = (byte)msInput.ReadByte();
-            //Debug.Assert(header == 89);
+
             DeflateStream zip = new DeflateStream(msInput, CompressionMode.Decompress, true);
             int cbRead;
             byte[] abResult = new byte[1024];
@@ -44,7 +43,9 @@ namespace VAR.PdfTools
             {
                 cbRead = zip.Read(abResult, 0, abResult.Length);
                 if (cbRead > 0)
+                {
                     msOutput.Write(abResult, 0, cbRead);
+                }
             }
             while (cbRead > 0);
             zip.Close();
@@ -55,6 +56,20 @@ namespace VAR.PdfTools
                 return msOutput.GetBuffer();
             }
             return null;
+        }
+
+        private static void ApplyFiltersToStreams(PdfStream stream)
+        {
+            string filter = stream.GetParamAsString("Filter");
+            if (filter == "FlateDecode")
+            {
+                stream.OriginalData = stream.Data;
+                stream.OriginalFilter = stream.Dictionary.Values["Filter"];
+                byte[] decodedStreamData = DecodeFlateStreamData(stream.Data);
+                stream.Data = decodedStreamData;
+                stream.Dictionary.Values["Length"] = new PdfInteger { Value = decodedStreamData.Length };
+                stream.Dictionary.Values.Remove("Filter");
+            }
         }
 
         #endregion
@@ -69,33 +84,42 @@ namespace VAR.PdfTools
 
         public static PdfDocument Load(byte[] data)
         {
-            var parser = new PdfParser(data);
             var doc = new PdfDocument();
+
+            // Parse data
+            var parser = new PdfParser(data);
             do
             {
                 PdfObject obj = parser.ParseObject();
                 if (obj != null)
                 {
+                    if (obj.Data is PdfStream)
+                    {
+                        ApplyFiltersToStreams((PdfStream)obj.Data);
+                    }
                     doc.Objects.Add(obj);
                 }
             } while (parser.IsEndOfStream() == false);
 
-            // Apply filters to streams
-            foreach(PdfObject obj in doc.Objects)
+            // Expand Object Streams
+            List<PdfObject> streamObjects = new List<PdfObject>();
+            foreach (PdfObject obj in doc.Objects)
             {
-                if(obj.Data.Type != PdfElementTypes.Stream) { continue; }
+                if (obj.Data.Type != PdfElementTypes.Stream) { continue; }
                 PdfStream stream = obj.Data as PdfStream;
 
-                string filter = stream.GetParamAsString("Filter");
-                if (filter == "FlateDecode")
+                string type = stream.GetParamAsString("Type");
+                long? number = stream.GetParamAsInt("N");
+                long? first = stream.GetParamAsInt("First");
+                if (type == "ObjStm" && number != null && first != null)
                 {
-                    stream.OriginalData = stream.Data;
-                    stream.OriginalFilter = stream.Dictionary.Values["Filter"];
-                    byte[] decodedStreamData = DecodeFlateStreamData(stream.Data);
-                    stream.Data = decodedStreamData;
-                    stream.Dictionary.Values["Length"] = new PdfInteger { Value = decodedStreamData.Length };
-                    stream.Dictionary.Values.Remove("Filter");
+                    PdfParser parserAux = new PdfParser(stream.Data);
+                    streamObjects.AddRange(parserAux.ParseObjectStream((int)number, (long)first));
                 }
+            }
+            foreach (PdfObject obj in streamObjects)
+            {
+                doc.Objects.Add(obj);
             }
 
             return doc;

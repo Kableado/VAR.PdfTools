@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -422,8 +423,8 @@ namespace VAR.PdfTools
             }
             NextChar();
             PdfObjectReference objRef = new PdfObjectReference();
-            objRef.ObjectID = number.Value;
-            objRef.ObjectGeneration = ((PdfInteger)objectGeneration).Value;
+            objRef.ObjectID = (int)number.Value;
+            objRef.ObjectGeneration = (int)((PdfInteger)objectGeneration).Value;
             return objRef;
         }
 
@@ -571,7 +572,6 @@ namespace VAR.PdfTools
                     NextChar();
                     character = PeekChar();
                     realChar += (byte)ByteHexValue(character);
-                    NextChar();
                     sbName.Append((char)realChar);
                 }
                 else if (character > 0x20 && character < 0x7F)
@@ -751,8 +751,8 @@ namespace VAR.PdfTools
                         if (endToken == "endobj")
                         {
                             obj = new PdfObject();
-                            obj.ObjectID = ((PdfInteger)objectID).Value;
-                            obj.ObjectGeneration = ((PdfInteger)objectGeneration).Value;
+                            obj.ObjectID = (int)((PdfInteger)objectID).Value;
+                            obj.ObjectGeneration = (int)((PdfInteger)objectGeneration).Value;
                             obj.Data = element;
                             break;
                         }
@@ -809,6 +809,44 @@ namespace VAR.PdfTools
                 }
             } while (IsEndOfStream() == false);
             return obj;
+        }
+
+        public List<PdfObject> ParseObjectStream(int number, long first)
+        {
+            var streamObjects = new List<PdfObject>();
+            var objectIds = new List<long>();
+            for (int i = 0; i < number; i++)
+            {
+                SkipWhitespace();
+                IPdfElement objectId = ParseElement();
+                if (objectId is PdfInteger)
+                {
+                    objectIds.Add(((PdfInteger)objectId).Value);
+                }
+                else
+                {
+                    throw new System.Exception(string.Format("Unexpected element parsing ObjectStream at: {0}", _streamPosition));
+                }
+                SkipWhitespace();
+                ParseElement();
+            }
+            _streamPosition = (int)first;
+            for (int i = 0; i < number; i++)
+            {
+                SkipWhitespace();
+                IPdfElement elem = ParseElement();
+                if (elem == null)
+                {
+                    throw new System.Exception(string.Format("Unexpected error parsing ObjectStream at: {0}", _streamPosition));
+                }
+
+                PdfObject objAux = new PdfObject();
+                objAux.ObjectGeneration = 0;
+                objAux.ObjectID = (int)objectIds[i];
+                objAux.Data = elem;
+                streamObjects.Add(objAux);
+            }
+            return streamObjects;
         }
 
         public bool IsEndOfStream()
