@@ -60,7 +60,7 @@ namespace VAR.PdfTools
 
         private static void ApplyFiltersToStreams(PdfStream stream)
         {
-            string filter = stream.GetParamAsString("Filter");
+            string filter = stream.Dictionary.GetParamAsString("Filter");
             if (filter == "FlateDecode")
             {
                 stream.OriginalData = stream.Data;
@@ -108,9 +108,9 @@ namespace VAR.PdfTools
                 if (obj.Data.Type != PdfElementTypes.Stream) { continue; }
                 PdfStream stream = obj.Data as PdfStream;
 
-                string type = stream.GetParamAsString("Type");
-                long? number = stream.GetParamAsInt("N");
-                long? first = stream.GetParamAsInt("First");
+                string type = stream.Dictionary.GetParamAsString("Type");
+                long? number = stream.Dictionary.GetParamAsInt("N");
+                long? first = stream.Dictionary.GetParamAsInt("First");
                 if (type == "ObjStm" && number != null && first != null)
                 {
                     PdfParser parserAux = new PdfParser(stream.Data);

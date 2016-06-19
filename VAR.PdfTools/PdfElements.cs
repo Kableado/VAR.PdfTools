@@ -65,6 +65,42 @@ namespace VAR.PdfTools
         public PdfElementTypes Type { get; private set; } = PdfElementTypes.Dictionary;
         private Dictionary<string, IPdfElement> _values = new Dictionary<string, IPdfElement>();
         public Dictionary<string, IPdfElement> Values { get { return _values; } }
+
+        public string GetParamAsString(string name)
+        {
+            if (Values.ContainsKey(name) == false) { return null; }
+
+            IPdfElement value = Values[name];
+            if (value is PdfArray)
+            {
+                value = ((PdfArray)value).Values[0];
+            }
+            if (value is PdfName)
+            {
+                return ((PdfName)value).Value;
+            }
+            if (value is PdfString)
+            {
+                return ((PdfString)value).Value;
+            }
+            return null;
+        }
+
+        public long? GetParamAsInt(string name)
+        {
+            if (Values.ContainsKey(name) == false) { return null; }
+
+            IPdfElement value = Values[name];
+            if (value is PdfArray)
+            {
+                value = ((PdfArray)value).Values[0];
+            }
+            if (value is PdfInteger)
+            {
+                return ((PdfInteger)value).Value;
+            }
+            return null;
+        }
     }
 
     public class PdfNull : IPdfElement
@@ -87,42 +123,6 @@ namespace VAR.PdfTools
 
         public byte[] OriginalData { get; set; }
         public IPdfElement OriginalFilter { get; set; }
-
-        public string GetParamAsString(string name)
-        {
-            if(Dictionary.Values.ContainsKey(name) == false) { return null; }
-
-            IPdfElement value = Dictionary.Values[name];
-            if (value is PdfArray)
-            {
-                value = ((PdfArray)value).Values[0];
-            }
-            if (value is PdfName)
-            {
-                return ((PdfName)value).Value;
-            }
-            if (value is PdfString)
-            {
-                return ((PdfString)value).Value;
-            }
-            return null;
-        }
-
-        public long? GetParamAsInt(string name)
-        {
-            if (Dictionary.Values.ContainsKey(name) == false) { return null; }
-
-            IPdfElement value = Dictionary.Values[name];
-            if (value is PdfArray)
-            {
-                value = ((PdfArray)value).Values[0];
-            }
-            if (value is PdfInteger)
-            {
-                return ((PdfInteger)value).Value;
-            }
-            return null;
-        }
     }
 
     public class PdfObject : IPdfElement
