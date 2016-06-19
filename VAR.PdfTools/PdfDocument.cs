@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -11,11 +12,19 @@ namespace VAR.PdfTools
 
         private List<PdfObject> _objects = new List<PdfObject>();
 
+        private PdfDictionary _catalog = null;
+
+        private List<PdfDocumentPage> _pages = new List<PdfDocumentPage>();
+
         #endregion
 
         #region Properties
 
         public List<PdfObject> Objects { get { return _objects; } }
+
+        public PdfDictionary Catalog { get { return _catalog; } }
+
+        public List<PdfDocumentPage> Pages { get { return _pages; } }
 
         #endregion
 
@@ -134,6 +143,40 @@ namespace VAR.PdfTools
             return elem;
         }
 
+        private static void ExtractPages(PdfDictionary page, PdfDocument doc)
+        {
+            string type = page.GetParamAsString("Type");
+            if (type == "Page")
+            {
+                PdfDocumentPage prevDocPage = null;
+                if (doc._pages.Count > 0)
+                {
+                    prevDocPage = doc._pages.Last();
+                }
+                PdfDocumentPage docPage = new PdfDocumentPage(page, prevDocPage);
+                doc._pages.Add(docPage);
+                return;
+            }
+            else if (type == "Pages")
+            {
+                if (page.Values.ContainsKey("Kids") == false || (page.Values["Kids"] is PdfArray) == false)
+                {
+                    throw new Exception("PdfDocument: Pages \"Kids\" not found");
+                }
+                PdfArray kids = page.Values["Kids"] as PdfArray;
+                foreach (IPdfElement elem in kids.Values)
+                {
+                    PdfDictionary childPage = elem as PdfDictionary;
+                    if (page == null) { continue; }
+                    ExtractPages(childPage, doc);
+                }
+            }
+            else
+            {
+                throw new Exception(string.Format("PdfDocument: Unexpected page type, found: {0}", type));
+            }
+        }
+
         #endregion
 
         #region Public methods
@@ -207,6 +250,32 @@ namespace VAR.PdfTools
             {
                 ResolveIndirectReferences(obj, dictObjects);
             }
+
+            // Search Catalog
+            foreach(PdfObject obj in doc.Objects)
+            {
+                if ((obj.Data is PdfDictionary) == false) { continue; }
+                string type = ((PdfDictionary)obj.Data).GetParamAsString("Type");
+                if(type == "Catalog")
+                {
+                    doc._catalog = (PdfDictionary)obj.Data;
+                    break;
+                }
+
+            }
+            if(doc._catalog == null)
+            {
+                throw new Exception("PdfDocument: Catalog not found");
+            }
+
+            // Search pages
+            if(doc.Catalog.Values.ContainsKey("Pages") == false || 
+                (doc.Catalog.Values["Pages"] is PdfDictionary) == false)
+            {
+                throw new Exception("PdfDocument: Pages not found");
+            }
+            PdfDictionary pages = (PdfDictionary)doc.Catalog.Values["Pages"];
+            ExtractPages(pages, doc);
 
             return doc;
         }
