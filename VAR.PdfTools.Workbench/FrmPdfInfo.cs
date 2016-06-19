@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace VAR.PdfTools.Workbench
@@ -49,31 +45,20 @@ namespace VAR.PdfTools.Workbench
             PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
 
             int nObjects = doc.Objects.Count;
-            List<PdfStream> streams = doc.Objects.Where(obj => obj.Data.Type == PdfElementTypes.Stream).Select(obj => (PdfStream)obj.Data).ToList();
-            int nStreams = streams.Count;
-            List<PdfStream> streamsWithFilters = streams
-                .Where(stream => stream.Dictionary.Values.ContainsKey("Filter"))
+            List<PdfStream> streams = doc.Objects
+                .Where(obj => obj.Data.Type == PdfElementTypes.Stream)
+                .Select(obj => (PdfStream)obj.Data)
                 .ToList();
-            var streamFilters = new List<string>();
-            foreach(PdfStream stream in streamsWithFilters)
-            {
-                IPdfElement filter = stream.Dictionary.Values["Filter"];
-                if (filter is PdfArray)
-                {
-                    filter = ((PdfArray)filter).Values[0];
-                }
-                if (filter is PdfName)
-                {
-                    streamFilters.Add(((PdfName)filter).Value);
-                }
-            }
+            int nStreams = streams.Count;
+            int nPages = doc.Pages.Count;
 
-            txtOutput.Lines = new string[]
-            {
-                string.Format("Number of Objects: {0}", nObjects),
-                string.Format("Number of Streams: {0}", nStreams),
-                string.Format("Unsuported Stream Filters: {0}", string.Join(", ", streamFilters.Distinct().ToArray())),
-            };
+            List<string> lines = new List<string>();
+            lines.Add(string.Format("Filename : {0}", System.IO.Path.GetFileNameWithoutExtension(txtPdfPath.Text)));
+            lines.Add(string.Format("Number of Objects : {0}", nObjects));
+            lines.Add(string.Format("Number of Streams : {0}", nStreams));
+            lines.Add(string.Format("Number of Pages   : {0}", nPages));
+            
+            txtOutput.Lines = lines.ToArray();
 
         }
 
