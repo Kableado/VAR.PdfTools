@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PdfContentAction.cs" />
     <Compile Include="PdfDocument.cs" />
     <Compile Include="PdfDocumentPage.cs" />
     <Compile Include="PdfElements.cs" />

@@ -628,6 +628,11 @@ namespace VAR.PdfTools
                 else
                 {
                     IPdfElement obj = ParseElement();
+                    if(obj == null)
+                    {
+                        break;
+                        //throw new Exception(string.Format("ParseArray: Error parsing item at: {0}", _streamPosition));
+                    }
                     array.Values.Add(obj);
                 }
                 SkipWhitespace();
@@ -860,6 +865,29 @@ namespace VAR.PdfTools
                 streamObjects.Add(objAux);
             }
             return streamObjects;
+        }
+
+        public List<PdfContentAction> ParseContent()
+        {
+            List<PdfContentAction> actions = new List<PdfContentAction>();
+            List<IPdfElement> elems = new List<IPdfElement>();
+            do
+            {
+                SkipWhitespace();
+                IPdfElement elem = ParseElement();
+                if (elem != null)
+                {
+                    elems.Add(elem);
+                }
+                else
+                {
+                    string token = ParseToken();
+                    PdfContentAction action = new PdfContentAction(token, elems);
+                    elems = new List<IPdfElement>();
+                    actions.Add(action);
+                }
+            } while (IsEndOfStream() == false);
+            return actions;
         }
 
         public bool IsEndOfStream()

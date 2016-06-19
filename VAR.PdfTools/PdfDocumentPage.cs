@@ -15,6 +15,8 @@ namespace VAR.PdfTools
 
         private Dictionary<string, PdfDictionary> _fonts = new Dictionary<string, PdfDictionary>();
 
+        private List<PdfContentAction> _contentActions = null;
+
         #endregion
 
         #region Properties
@@ -24,6 +26,8 @@ namespace VAR.PdfTools
         public byte[] Content { get { return _content; } }
         
         public Dictionary<string, PdfDictionary> Fonts { get { return _fonts; } }
+
+        public List<PdfContentAction> ContentActions { get { return _contentActions; } }
 
         #endregion
 
@@ -38,8 +42,8 @@ namespace VAR.PdfTools
                 throw new Exception(string.Format("PdfDocumentPage: Expected dictionary of type:\"Page\". Found: {0}", type));
             }
 
+            // Get content, resources and fonts
             _content = _baseData.GetParamAsStream("Contents");
-
             if (_baseData.Values.ContainsKey("Resources") == false)
             {
                 _resources = prevDocPage._resources;
@@ -55,6 +59,16 @@ namespace VAR.PdfTools
                 {
                     _fonts.Add(pair.Key, pair.Value as PdfDictionary);
                 }
+            }
+
+            // Parse content
+            if (_content != null)
+            {
+                PdfParser parser = new PdfParser(_content);
+                _contentActions = parser.ParseContent();
+            }else
+            {
+                _contentActions = new List<PdfContentAction>();
             }
         }
 
