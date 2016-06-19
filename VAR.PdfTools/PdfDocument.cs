@@ -80,6 +80,21 @@ namespace VAR.PdfTools
                 stream.Dictionary.Values["Length"] = new PdfInteger { Value = decodedStreamData.Length };
                 stream.Dictionary.Values.Remove("Filter");
             }
+            else if(filter == "ASCII85Decode" || filter == "A85")
+            {
+                // FIXME: Implement this filter
+            }
+            else if (filter == "CCITTFaxDecode")
+            {
+                // FIXME: Implement this filter
+            }
+            else if (filter == "DCTDecode")
+            {
+                // FIXME: Implement this filter
+            }
+            {
+                // FIXME: Implement the rest of filters
+            }
         }
 
         private static IPdfElement ResolveIndirectReferences(IPdfElement elem, Dictionary<int, PdfObject> dictReferences)
