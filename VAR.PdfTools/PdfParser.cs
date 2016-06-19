@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -253,7 +254,7 @@ namespace VAR.PdfTools
             do
             {
                 byte character = PeekChar();
-                if (char.IsLetter((char)character) == false)
+                if (IsWhitespace(character) || IsDelimiter(character))
                 {
                     break;
                 }
@@ -262,7 +263,7 @@ namespace VAR.PdfTools
             } while (IsEndOfStream() == false);
             return sbToken.ToString();
         }
-
+        
         private IPdfElement ParseElement()
         {
             IPdfElement obj = null;
@@ -373,9 +374,13 @@ namespace VAR.PdfTools
             {
                 if (PeekChar() == '.')
                 {
+                    sbNumber.Append(CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
                     dotCount++;
                 }
-                sbNumber.Append((char)PeekChar());
+                else
+                {
+                    sbNumber.Append((char)PeekChar());
+                }
                 NextChar();
                 valid = true;
             }
@@ -415,6 +420,11 @@ namespace VAR.PdfTools
                 return obj;
             }
             IPdfElement objectGeneration = ParseNumber();
+            if((objectGeneration is PdfInteger) == false)
+            {
+                _streamPosition = streamPosition;
+                return obj;
+            }
             SkipWhitespace();
             if (PeekChar() != 'R')
             {
@@ -446,11 +456,14 @@ namespace VAR.PdfTools
                     else if (character == ')')
                     {
                         depth--;
-                        sbString.Append((char)character);
                         if (depth == 0)
                         {
                             NextChar();
                             break;
+                        }
+                        else
+                        {
+                            sbString.Append((char)character);
                         }
                     }
                     else if (character == '\\')
