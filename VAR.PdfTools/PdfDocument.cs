@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 
 namespace VAR.PdfTools
 {
@@ -72,6 +73,67 @@ namespace VAR.PdfTools
             }
         }
 
+        private static IPdfElement ResolveIndirectReferences(IPdfElement elem, Dictionary<int, PdfObject> dictReferences)
+        {
+            if (elem is PdfObjectReference)
+            {
+                int objectId = ((PdfObjectReference)elem).ObjectID;
+                if (dictReferences.ContainsKey(objectId))
+                {
+                    PdfObject referencedObject = dictReferences[objectId];
+                    referencedObject.UsageCount++;
+                    return referencedObject.Data;
+                }
+                else
+                {
+                    return new PdfNull();
+                }
+            }
+
+            PdfObject obj = elem as PdfObject;
+            if (obj != null)
+            {
+                IPdfElement result = ResolveIndirectReferences(obj.Data, dictReferences);
+                if (result != obj.Data)
+                {
+                    obj.Data = result;
+                }
+                return elem;
+            }
+
+            PdfArray array = elem as PdfArray;
+            if (array != null)
+            {
+                for (int i = 0; i < array.Values.Count; i++)
+                {
+                    IPdfElement result = ResolveIndirectReferences(array.Values[i], dictReferences);
+                    if(result != array.Values[i])
+                    {
+                        array.Values[i] = result;
+                    }
+                }
+                return elem;
+            }
+            
+            PdfDictionary dict = elem as PdfDictionary;
+            if (dict != null)
+            {
+                List<string> keys = dict.Values.Keys.ToList();
+                foreach (string key in keys)
+                {
+                    IPdfElement value = dict.Values[key];
+                    IPdfElement result = ResolveIndirectReferences(value, dictReferences);
+                    if (result != value)
+                    {
+                        dict.Values[key] = result;
+                    }
+                }
+                return elem;
+            }
+            
+            return elem;
+        }
+
         #endregion
 
         #region Public methods
@@ -113,6 +175,7 @@ namespace VAR.PdfTools
                 long? first = stream.Dictionary.GetParamAsInt("First");
                 if (type == "ObjStm" && number != null && first != null)
                 {
+                    obj.UsageCount++;
                     PdfParser parserAux = new PdfParser(stream.Data);
                     streamObjects.AddRange(parserAux.ParseObjectStream((int)number, (long)first));
                 }
@@ -120,6 +183,29 @@ namespace VAR.PdfTools
             foreach (PdfObject obj in streamObjects)
             {
                 doc.Objects.Add(obj);
+            }
+
+            // Build cross reference table
+            Dictionary<int, PdfObject> dictObjects = new Dictionary<int, PdfObject>();
+            foreach (PdfObject obj in doc.Objects)
+            {
+                if (dictObjects.ContainsKey(obj.ObjectID))
+                {
+                    if (dictObjects[obj.ObjectID].ObjectGeneration < obj.ObjectGeneration)
+                    {
+                        dictObjects[obj.ObjectID] = obj;
+                    }
+                }
+                else
+                {
+                    dictObjects.Add(obj.ObjectID, obj);
+                }
+            }
+
+            // Iterate full document to resolve all indirect references
+            foreach(PdfObject obj in doc.Objects)
+            {
+                ResolveIndirectReferences(obj, dictObjects);
             }
 
             return doc;

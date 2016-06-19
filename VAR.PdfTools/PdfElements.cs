@@ -131,5 +131,6 @@ namespace VAR.PdfTools
         public int ObjectID { get; set; }
         public int ObjectGeneration { get; set; }
         public IPdfElement Data { get; set; }
+        public int UsageCount { get; set; } = 0;
     }
 }
