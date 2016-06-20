@@ -816,9 +816,11 @@ namespace VAR.PdfTools
                     if (token == "xref")
                     {
                         // FIXME: Ignoring xref for now
+                        SkipToEndOfLine();
                         SkipEndOfLine();
                         do
                         {
+                            SkipWhitespace();
                             IPdfElement objNumber = ParseNumber();
                             SkipWhitespace();
                             objNumber = ParseNumber();
