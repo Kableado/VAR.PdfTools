@@ -33,7 +33,7 @@ namespace VAR.PdfTools
 
         #region Life cycle
 
-        public PdfDocumentPage(PdfDictionary baseData, PdfDocumentPage prevDocPage)
+        public PdfDocumentPage(PdfDictionary baseData, PdfDictionary resources)
         {
             _baseData = baseData;
             string type = baseData.GetParamAsString("Type");
@@ -46,13 +46,13 @@ namespace VAR.PdfTools
             _content = _baseData.GetParamAsStream("Contents");
             if (_baseData.Values.ContainsKey("Resources") == false)
             {
-                _resources = prevDocPage._resources;
+                _resources = resources;
             }
             else
             {
                 _resources = _baseData.Values["Resources"] as PdfDictionary;
             }
-            if (_resources.Values.ContainsKey("Font"))
+            if (_resources != null && _resources.Values.ContainsKey("Font"))
             {
                 PdfDictionary fonts = _resources.Values["Font"] as PdfDictionary;
                 foreach (KeyValuePair<string, IPdfElement> pair in fonts.Values)

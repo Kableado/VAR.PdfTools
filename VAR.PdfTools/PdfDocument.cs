@@ -158,17 +158,12 @@ namespace VAR.PdfTools
             return elem;
         }
 
-        private static void ExtractPages(PdfDictionary page, PdfDocument doc)
+        private static void ExtractPages(PdfDictionary page, PdfDocument doc, PdfDictionary resources)
         {
             string type = page.GetParamAsString("Type");
             if (type == "Page")
             {
-                PdfDocumentPage prevDocPage = null;
-                if (doc._pages.Count > 0)
-                {
-                    prevDocPage = doc._pages.Last();
-                }
-                PdfDocumentPage docPage = new PdfDocumentPage(page, prevDocPage);
+                PdfDocumentPage docPage = new PdfDocumentPage(page, resources);
                 doc._pages.Add(docPage);
                 return;
             }
@@ -183,7 +178,12 @@ namespace VAR.PdfTools
                 {
                     PdfDictionary childPage = elem as PdfDictionary;
                     if (page == null) { continue; }
-                    ExtractPages(childPage, doc);
+                    PdfDictionary resourcesAux = null;
+                    if (page.Values.ContainsKey("Resources"))
+                    {
+                        resourcesAux = page.Values["Resources"] as PdfDictionary;
+                    }
+                    ExtractPages(childPage, doc, resourcesAux);
                 }
             }
             else
@@ -290,7 +290,12 @@ namespace VAR.PdfTools
                 throw new Exception("PdfDocument: Pages not found");
             }
             PdfDictionary pages = (PdfDictionary)doc.Catalog.Values["Pages"];
-            ExtractPages(pages, doc);
+            PdfDictionary resources = null;
+            if (doc.Catalog.Values.ContainsKey("Resources"))
+            {
+                resources = doc.Catalog.Values["Resources"] as PdfDictionary;
+            }
+            ExtractPages(pages, doc, resources);
 
             return doc;
         }
