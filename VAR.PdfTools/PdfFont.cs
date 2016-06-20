@@ -14,6 +14,8 @@ namespace VAR.PdfTools
 
         private Dictionary<char, string> _toUnicode = null;
 
+        private Dictionary<char, double> _widths = null;
+
         #endregion
 
         #region Properties
@@ -40,6 +42,32 @@ namespace VAR.PdfTools
                 _toUnicode = parser.ParseToUnicode();
             }
 
+            if (BaseData.Values.ContainsKey("FirstChar") && baseData.Values.ContainsKey("LastChar") && baseData.Values.ContainsKey("Widths"))
+            {
+                double glyphSpaceToTextSpace = 1000.0; // FIXME: SubType:Type3 Uses a FontMatrix that may not correspond to 1/1000th
+                _widths = new Dictionary<char, double>();
+                char firstChar = (char)baseData.GetParamAsInt("FirstChar");
+                char lastChar = (char)baseData.GetParamAsInt("LastChar");
+                PdfArray widths = baseData.Values["Widths"] as PdfArray;
+                char actualChar = firstChar;
+                foreach (IPdfElement elem in widths.Values)
+                {
+                    PdfReal widthReal = elem as PdfReal;
+                    if (widthReal != null)
+                    {
+                        _widths.Add(actualChar, widthReal.Value / glyphSpaceToTextSpace);
+                        actualChar++;
+                        continue;
+                    }
+                    PdfInteger widthInt = elem as PdfInteger;
+                    if (widthInt != null)
+                    {
+                        _widths.Add(actualChar, widthInt.Value / glyphSpaceToTextSpace);
+                        actualChar++;
+                        continue;
+                    }
+                }
+            }
         }
 
         #endregion
@@ -60,6 +88,19 @@ namespace VAR.PdfTools
             }
 
             return new string(character, 1);
+        }
+
+        public double GetCharWidth(char character)
+        {
+            if (_widths == null)
+            {
+                return 0;
+            }
+            if (_widths.ContainsKey(character))
+            {
+                return _widths[character];
+            }
+            return 0;
         }
 
         #endregion
