@@ -547,10 +547,11 @@ namespace VAR.PdfTools
                 {
                     byte character = PeekChar();
                     if (character == '>') { break; }
-                    byte nextCharacter = PeekNextChar(1);
+                    NextChar();
+                    byte nextCharacter = PeekChar();
+                    NextChar();
                     byte realChar = (byte)(ByteHexValue(character) * 16 + ByteHexValue(nextCharacter));
                     sbString.Append((Char)realChar);
-                    NextChar();
                 } while (IsEndOfStream() == false);
                 NextChar();
 
