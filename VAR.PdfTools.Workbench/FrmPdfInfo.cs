@@ -33,7 +33,7 @@ namespace VAR.PdfTools.Workbench
                 txtPdfPath.Text = dlgFile.FileName;
             }
         }
-
+        
         private void btnProcess_Click(object sender, EventArgs e)
         {
             if (System.IO.File.Exists(txtPdfPath.Text) == false)
@@ -45,6 +45,7 @@ namespace VAR.PdfTools.Workbench
             PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
 
             int nObjects = doc.Objects.Count;
+            int nRootObject = doc.Objects.Where(obj => obj.UsageCount == 0).Count();
             List<PdfStream> streams = doc.Objects
                 .Where(obj => obj.Data.Type == PdfElementTypes.Stream)
                 .Select(obj => (PdfStream)obj.Data)
@@ -55,11 +56,21 @@ namespace VAR.PdfTools.Workbench
             List<string> lines = new List<string>();
             lines.Add(string.Format("Filename : {0}", System.IO.Path.GetFileNameWithoutExtension(txtPdfPath.Text)));
             lines.Add(string.Format("Number of Objects : {0}", nObjects));
+            lines.Add(string.Format("Number of Roots   : {0}", nRootObject));
             lines.Add(string.Format("Number of Streams : {0}", nStreams));
             lines.Add(string.Format("Number of Pages   : {0}", nPages));
-            
-            txtOutput.Lines = lines.ToArray();
 
+            foreach (PdfDocumentPage page in doc.Pages)
+            {
+                PdfTextExtractor extractor = new PdfTextExtractor(page);
+                foreach (PdfTextElement textElement in extractor.Elements)
+                {
+                    lines.Add(string.Format("Text({0}, {1})({2}): \"{3}\"", 
+                        textElement.Matrix.Matrix[0, 2], textElement.Matrix.Matrix[1, 2], textElement.VisibleWidth, textElement.VisibleText));
+                }
+            }
+
+            txtOutput.Lines = lines.ToArray();
         }
 
     }

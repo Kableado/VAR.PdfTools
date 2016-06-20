@@ -44,6 +44,13 @@ namespace VAR.PdfTools
             return 0;
         }
 
+        private byte[] GetRawData(long start, long size)
+        {
+            byte[] newArray = new byte[size];
+            Array.Copy(_stream, start, newArray, 0, size);
+            return newArray;
+        }
+
         private byte[] GetRawData(long length)
         {
             var memStream = new MemoryStream();
@@ -907,6 +914,11 @@ namespace VAR.PdfTools
                 else
                 {
                     string token = ParseToken();
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        break;
+                        //throw new Exception(string.Format("ParseContet: Expected token found nothing, at: {0}", _streamPosition));
+                    }
                     PdfContentAction action = new PdfContentAction(token, elems);
                     elems = new List<IPdfElement>();
                     actions.Add(action);
