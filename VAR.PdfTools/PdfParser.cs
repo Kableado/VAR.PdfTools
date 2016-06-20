@@ -810,16 +810,26 @@ namespace VAR.PdfTools
                     {
                         // FIXME: Ignoring xref for now
                         SkipEndOfLine();
-                        IPdfElement objNumber = ParseNumber();
-                        SkipWhitespace();
-                        objNumber = ParseNumber();
-                        SkipEndOfLine();
-                        PdfInteger refNumber = objNumber as PdfInteger;
-                        for (int i = 0; i < refNumber.Value; i++)
+                        do
                         {
-                            SkipToEndOfLine();
+                            IPdfElement objNumber = ParseNumber();
+                            SkipWhitespace();
+                            objNumber = ParseNumber();
                             SkipEndOfLine();
-                        }
+                            PdfInteger refNumber = objNumber as PdfInteger;
+                            for (int i = 0; i < refNumber.Value; i++)
+                            {
+                                SkipToEndOfLine();
+                                SkipEndOfLine();
+                            }
+                            long currentPosition = _streamPosition;
+                            IPdfElement testElem = ParseElement();
+                            _streamPosition = currentPosition;
+                            if((testElem is PdfInteger) == false)
+                            {
+                                break;
+                            }
+                        } while (IsEndOfStream() == false);
                         continue;
                     }
                     if (token == "trailer")
