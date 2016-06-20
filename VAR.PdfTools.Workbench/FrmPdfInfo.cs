@@ -60,8 +60,25 @@ namespace VAR.PdfTools.Workbench
             lines.Add(string.Format("Number of Streams : {0}", nStreams));
             lines.Add(string.Format("Number of Pages   : {0}", nPages));
 
+            int pageNumber = 1;
             foreach (PdfDocumentPage page in doc.Pages)
             {
+                lines.Add("-----------------------------------------------------------------------------------------");
+                if (page.BaseData.Values.ContainsKey("CropBox"))
+                {
+                    PdfArray cropBox = page.BaseData.Values["CropBox"] as PdfArray;
+                    lines.Add(string.Format("Page({0} of {1}): {2} {3} {4} {5}", pageNumber, doc.Pages.Count,
+                            ((PdfInteger)cropBox.Values[0]).Value,
+                            ((PdfInteger)cropBox.Values[1]).Value,
+                            ((PdfInteger)cropBox.Values[2]).Value,
+                            ((PdfInteger)cropBox.Values[3]).Value));
+                }
+                else
+                {
+                    lines.Add(string.Format("Page({0} of {1}): ", pageNumber, doc.Pages.Count));
+                }
+                pageNumber++;
+
                 PdfTextExtractor extractor = new PdfTextExtractor(page);
                 foreach (PdfTextElement textElement in extractor.Elements)
                 {
