@@ -13,7 +13,7 @@ namespace VAR.PdfTools
 
         private PdfDictionary _resources = null;
 
-        private Dictionary<string, PdfDictionary> _fonts = new Dictionary<string, PdfDictionary>();
+        private Dictionary<string, PdfFont> _fonts = new Dictionary<string, PdfFont>();
 
         private List<PdfContentAction> _contentActions = null;
 
@@ -25,7 +25,7 @@ namespace VAR.PdfTools
 
         public byte[] Content { get { return _content; } }
         
-        public Dictionary<string, PdfDictionary> Fonts { get { return _fonts; } }
+        public Dictionary<string, PdfFont> Fonts { get { return _fonts; } }
 
         public List<PdfContentAction> ContentActions { get { return _contentActions; } }
 
@@ -57,7 +57,8 @@ namespace VAR.PdfTools
                 PdfDictionary fonts = _resources.Values["Font"] as PdfDictionary;
                 foreach (KeyValuePair<string, IPdfElement> pair in fonts.Values)
                 {
-                    _fonts.Add(pair.Key, pair.Value as PdfDictionary);
+                    var font = new PdfFont(pair.Value as PdfDictionary);
+                    _fonts.Add(pair.Key, font);
                 }
             }
 

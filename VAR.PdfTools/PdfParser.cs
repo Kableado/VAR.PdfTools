@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace VAR.PdfTools
@@ -697,6 +698,19 @@ namespace VAR.PdfTools
             return dict;
         }
 
+        public string ReencodeStringToUTF16BE(string strIn)
+        {
+            byte[] byteArray = strIn.Select(c => (byte)c).ToArray();
+            if((byteArray.Length % 2) == 1)
+            {
+                byte[] newByteArray = new byte[byteArray.Length + 1];
+                newByteArray[0] = 0x00;
+                Array.Copy(byteArray, 0, newByteArray, 1, byteArray.Length);
+                byteArray = newByteArray;
+            }
+            return Encoding.BigEndianUnicode.GetString(byteArray);
+        }
+
         #endregion
 
         #region Public methods
@@ -889,6 +903,138 @@ namespace VAR.PdfTools
                 }
             } while (IsEndOfStream() == false);
             return actions;
+        }
+
+        public Dictionary<char, string> ParseToUnicode()
+        {
+            var toUnicode = new Dictionary<char, string>();
+            long skip = MeasureToMarkers(new char[][] {
+                new char[] { 'b', 'e', 'g', 'i', 'n', 'c', 'm', 'a', 'p'},
+            });
+            _streamPosition = skip;
+            var stack = new List<IPdfElement>();
+            do
+            {
+                SkipWhitespace();
+                IPdfElement elem = ParseElement();
+                if (elem != null)
+                {
+                    stack.Add(elem);
+                }
+                else
+                {
+                    string token = ParseToken();
+                    if (token == "begincodespacerange")
+                    {
+                        PdfInteger numCodespaces = stack.Last() as PdfInteger;
+                        if (numCodespaces == null)
+                        {
+                            throw new Exception(string.Format("ParseToUnicode: \"begincodespacerange\" found without preceding count at: {0}", _streamPosition));
+                        }
+                        for (int i = 0; i < numCodespaces.Value; i++)
+                        {
+                            // Skip CodeSpaceRanges
+                            SkipWhitespace();
+                            PdfString strStart = ParseString();
+                            SkipWhitespace();
+                            PdfString strEnd = ParseString();
+                        }
+                        SkipWhitespace();
+                        string endToken = ParseToken();
+                        if (endToken != "endcodespacerange")
+                        {
+                            throw new Exception(string.Format("ParseToUnicode: Expected \"endcodespacerange\", found \"{0}\", at: {1}", endToken, _streamPosition));
+                        }
+                    }
+                    else if (token == "beginbfrange")
+                    {
+                        PdfInteger numRanges = stack.Last() as PdfInteger;
+                        if (numRanges == null)
+                        {
+                            throw new Exception(string.Format("ParseToUnicode: \"beginbfrange\" found without preceding count at: {0}", _streamPosition));
+                        }
+                        for (int i = 0; i < numRanges.Value; i++)
+                        {
+                            SkipWhitespace();
+                            PdfString pdfStrStart = ParseString();
+                            SkipWhitespace();
+                            PdfString pdfStrEnd = ParseString();
+                            SkipWhitespace();
+                            IPdfElement pdfElemDest = ParseElement();
+
+                            char chStart = ReencodeStringToUTF16BE(pdfStrStart.Value)[0];
+                            char chEnd = ReencodeStringToUTF16BE(pdfStrEnd.Value)[0];
+
+                            if(chStart == chEnd && pdfElemDest is PdfString)
+                            {
+                                string strDst = ReencodeStringToUTF16BE(((PdfString)pdfElemDest).Value);
+                                toUnicode.Add(chStart, strDst);
+                                continue;
+                            }
+                            if (chEnd > chStart && pdfElemDest is PdfString)
+                            {
+                                string strDst = ReencodeStringToUTF16BE(((PdfString)pdfElemDest).Value);
+                                char[] chsDest = strDst.ToArray();
+                                for (char c = chStart; c <= chEnd; c++)
+                                {
+                                    toUnicode.Add(c, new string(chsDest));
+                                    chsDest[chsDest.Length - 1]++;
+                                }
+                                continue;
+                            }
+                            if (chEnd > chStart && pdfElemDest is PdfArray)
+                            {
+                                PdfArray array = pdfElemDest as PdfArray;
+                                int length = chEnd - chStart;
+                                for (int j = 0; j <= length; j++)
+                                {
+                                    char c = (char)(chStart + j);
+                                    string strDst = ReencodeStringToUTF16BE(((PdfString)array.Values[j]).Value);
+                                    toUnicode.Add(c, strDst);
+                                }
+                                continue;
+                            }
+                        }
+                        SkipWhitespace();
+                        string endToken = ParseToken();
+                        if (endToken != "endbfrange")
+                        {
+                            throw new Exception(string.Format("ParseToUnicode: Expected \"endbfrange\", found \"{0}\", at: {1}", endToken, _streamPosition));
+                        }
+                    }
+                    else if (token == "beginbfchar")
+                    {
+                        PdfInteger numChars = stack.Last() as PdfInteger;
+                        if (numChars == null)
+                        {
+                            throw new Exception(string.Format("ParseToUnicode: \"beginbfchar\" found without preceding count at: {0}", _streamPosition));
+                        }
+                        for (int i = 0; i < numChars.Value; i++)
+                        {
+                            SkipWhitespace();
+                            PdfString pdfStrOrig = ParseString();
+                            SkipWhitespace();
+                            PdfString pdfStrDest = ParseString();
+
+                            char chOrig = ReencodeStringToUTF16BE(pdfStrOrig.Value)[0];
+                            string strDst = ReencodeStringToUTF16BE(((PdfString)pdfStrDest).Value);
+                            toUnicode.Add(chOrig, strDst);
+                        }
+                        SkipWhitespace();
+                        string endToken = ParseToken();
+                        if (endToken != "endbfchar")
+                        {
+                            throw new Exception(string.Format("ParseToUnicode: Expected \"endbfchar\", found \"{0}\", at: {1}", endToken, _streamPosition));
+                        }
+                    }
+                    else
+                    {
+                        // Ignore rest of tokens
+                    }
+                }
+
+            } while (IsEndOfStream() == false);
+            return toUnicode;
         }
 
         public bool IsEndOfStream()

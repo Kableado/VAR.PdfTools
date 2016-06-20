@@ -44,6 +44,7 @@
     <Compile Include="PdfDocument.cs" />
     <Compile Include="PdfDocumentPage.cs" />
     <Compile Include="PdfElements.cs" />
+    <Compile Include="PdfFont.cs" />
     <Compile Include="PdfParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
