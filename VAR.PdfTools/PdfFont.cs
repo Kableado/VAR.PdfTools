@@ -70,6 +70,80 @@ namespace VAR.PdfTools
                 }
                 // FIMXE: Calculate real height
             }
+            else
+            {
+                string baseFont = _baseData.GetParamAsString("BaseFont");
+                if (baseFont == "Times-Roman")
+                {
+                    _widths = PdfStandar14FontMetrics.Times_Roman.Widths;
+                    _height = PdfStandar14FontMetrics.Times_Roman.ApproxHeight;
+                }
+                if (baseFont == "Times-Bold")
+                {
+                    _widths = PdfStandar14FontMetrics.Times_Bold.Widths;
+                    _height = PdfStandar14FontMetrics.Times_Bold.ApproxHeight;
+                }
+                if (baseFont == "Times-Italic")
+                {
+                    _widths = PdfStandar14FontMetrics.Times_Italic.Widths;
+                    _height = PdfStandar14FontMetrics.Times_Italic.ApproxHeight;
+                }
+                if (baseFont == "Times-BoldItalic")
+                {
+                    _widths = PdfStandar14FontMetrics.Times_BoldItalic.Widths;
+                    _height = PdfStandar14FontMetrics.Times_BoldItalic.ApproxHeight;
+                }
+                if (baseFont == "Helvetica")
+                {
+                    _widths = PdfStandar14FontMetrics.Helvetica.Widths;
+                    _height = PdfStandar14FontMetrics.Helvetica.ApproxHeight;
+                }
+                if (baseFont == "Helvetica-Bold")
+                {
+                    _widths = PdfStandar14FontMetrics.Helvetica_Bold.Widths;
+                    _height = PdfStandar14FontMetrics.Helvetica_Bold.ApproxHeight;
+                }
+                if (baseFont == "Helvetica-Oblique")
+                {
+                    _widths = PdfStandar14FontMetrics.Helvetica_Oblique.Widths;
+                    _height = PdfStandar14FontMetrics.Helvetica_Oblique.ApproxHeight;
+                }
+                if (baseFont == "Helvetica-BoldOblique")
+                {
+                    _widths = PdfStandar14FontMetrics.Helvetica_BoldOblique.Widths;
+                    _height = PdfStandar14FontMetrics.Helvetica_BoldOblique.ApproxHeight;
+                }
+                if (baseFont == "Courier")
+                {
+                    _widths = PdfStandar14FontMetrics.Courier.Widths;
+                    _height = PdfStandar14FontMetrics.Courier.ApproxHeight;
+                }
+                if (baseFont == "Courier-Bold")
+                {
+                    _widths = PdfStandar14FontMetrics.Courier_Bold.Widths;
+                    _height = PdfStandar14FontMetrics.Courier_Bold.ApproxHeight;
+                }
+                if (baseFont == "Courier-Oblique")
+                {
+                    _widths = PdfStandar14FontMetrics.Courier_Oblique.Widths;
+                    _height = PdfStandar14FontMetrics.Courier_Oblique.ApproxHeight;
+                }
+                if (baseFont == "Courier-BoldOblique")
+                {
+                    _widths = PdfStandar14FontMetrics.Courier_BoldOblique.Widths;
+                    _height = PdfStandar14FontMetrics.Courier_BoldOblique.ApproxHeight;
+                }
+                if (baseFont == "Symbol")
+                {
+                    _widths = PdfStandar14FontMetrics.Symbol.Widths;
+                    _height = PdfStandar14FontMetrics.Symbol.ApproxHeight;
+                }
+                if (baseFont == "ZapfDingbats")
+                {
+                    _widths = PdfStandar14FontMetrics.ZapfDingbats.Widths;
+                    _height = PdfStandar14FontMetrics.ZapfDingbats.ApproxHeight;
+                }
+            }
         }
 
         #endregion
