@@ -5,9 +5,19 @@ namespace VAR.PdfTools
 {
     public class Vector3D
     {
+        #region Declarations
+
         public double[] _vector = new double[3];
 
+        #endregion
+
+        #region Properties
+
         public double[] Vector { get { return _vector; } }
+
+        #endregion
+
+        #region Creator
 
         public Vector3D()
         {
@@ -20,18 +30,34 @@ namespace VAR.PdfTools
             _vector[1] = 0.0;
             _vector[2] = 1.0;
         }
+
+        #endregion
     }
     
     public class Matrix3x3
     {
+        #region Declarations
+
         public double[,] _matrix = new double[3, 3];
 
+        #endregion
+
+        #region Properties
+
         public double[,] Matrix { get { return _matrix; } }
+
+        #endregion
+
+        #region Creator
 
         public Matrix3x3()
         {
             Idenity();
         }
+
+        #endregion
+
+        #region Public methods
 
         public void Idenity()
         {
@@ -91,8 +117,9 @@ namespace VAR.PdfTools
             return newMatrix;
         }
 
+        #endregion
     }
-    
+
     public class PdfTextElement
     {
         public PdfFont Font { get; set; }
@@ -115,13 +142,19 @@ namespace VAR.PdfTools
         private PdfDocumentPage _page = null;
 
         private List<PdfTextElement> _textElements = new List<PdfTextElement>();
-        
+
+        // Graphics state
+        private List<Matrix3x3> _graphicsMatrixStack = new List<Matrix3x3>();
+        private Matrix3x3 _graphicsMatrix = new Matrix3x3();
+
+        // Text state
         private PdfFont _font = null;
         private double _fontSize = 1;
         private double _textLeading = 0;
 
+        // Text object state
         private bool inText = false;
-        private Matrix3x3 _matrix = new Matrix3x3();
+        private Matrix3x3 _textMatrix = new Matrix3x3();
         private StringBuilder _sbText = new StringBuilder();
         private double _textWidth = 0;
 
@@ -202,11 +235,11 @@ namespace VAR.PdfTools
             }
 
             PdfTextElement textElem = new PdfTextElement();
-            textElem.Matrix = _matrix.Copy();
+            textElem.Matrix = _textMatrix.Multiply(_graphicsMatrix);
             textElem.Font = _font;
             textElem.RawText = _sbText.ToString();
             textElem.VisibleText = PdfString_ToUnicode(textElem.RawText, _font);
-            textElem.VisibleWidth = _textWidth;
+            textElem.VisibleWidth = _textWidth * textElem.Matrix.Matrix[0, 0];
             _textElements.Add(textElem);
 
             _sbText = new StringBuilder();
@@ -217,59 +250,83 @@ namespace VAR.PdfTools
 
         #region Operations
 
-        private void OpBT()
+        private void OpPushGraphState()
         {
-            _matrix.Idenity();
+            _graphicsMatrixStack.Add(_graphicsMatrix.Copy());
+        }
+
+        private void OpPopGraphState()
+        {
+            _graphicsMatrix = _graphicsMatrixStack[_graphicsMatrixStack.Count - 1];
+            _graphicsMatrixStack.RemoveAt(_graphicsMatrixStack.Count - 1);
+        }
+
+        private void OpSetGraphMatrix(double a, double b, double c, double d, double e, double f)
+        {
+            _graphicsMatrix.Matrix[0, 0] = a;
+            _graphicsMatrix.Matrix[1, 0] = b;
+            _graphicsMatrix.Matrix[2, 0] = 0;
+            _graphicsMatrix.Matrix[0, 1] = c;
+            _graphicsMatrix.Matrix[1, 1] = d;
+            _graphicsMatrix.Matrix[2, 1] = 0;
+            _graphicsMatrix.Matrix[0, 2] = e;
+            _graphicsMatrix.Matrix[1, 2] = f;
+            _graphicsMatrix.Matrix[2, 2] = 1;
+        }
+
+        private void OpBeginText()
+        {
+            _textMatrix.Idenity();
             inText = true;
         }
 
-        private void OpET()
+        private void OpEndText()
         {
             FlushTextElement();
             inText = false;
         }
 
-        private void OpTf(string fontName, double size)
+        private void OpTextFont(string fontName, double size)
         {
             FlushTextElement();
             _font = _page.Fonts[fontName];
             _fontSize = size;
         }
 
-        private void OpTL(double textLeading)
+        private void OpTextLeading(double textLeading)
         {
             _textLeading = textLeading;
         }
 
-        private void OpTd(double x, double y)
+        private void OpTesDisplace(double x, double y)
         {
             FlushTextElement();
             var newMatrix = new Matrix3x3();
             newMatrix.Matrix[0, 2] = x;
             newMatrix.Matrix[1, 2] = y;
-            _matrix = newMatrix.Multiply(_matrix);
+            _textMatrix = newMatrix.Multiply(_textMatrix);
         }
 
-        private void OpTStar()
+        private void OpTextLineFeed()
         {
-            OpTd(0, -_textLeading);
+            OpTesDisplace(0, -_textLeading);
         }
 
-        private void OpTm(double a, double b, double c, double d, double e, double f)
+        private void OpSetTextMatrix(double a, double b, double c, double d, double e, double f)
         {
             FlushTextElement();
-            _matrix.Matrix[0, 0] = a;
-            _matrix.Matrix[1, 0] = b;
-            _matrix.Matrix[2, 0] = 0;
-            _matrix.Matrix[0, 1] = c;
-            _matrix.Matrix[1, 1] = d;
-            _matrix.Matrix[2, 1] = 0;
-            _matrix.Matrix[0, 2] = e;
-            _matrix.Matrix[1, 2] = f;
-            _matrix.Matrix[2, 2] = 1;
+            _textMatrix.Matrix[0, 0] = a;
+            _textMatrix.Matrix[1, 0] = b;
+            _textMatrix.Matrix[2, 0] = 0;
+            _textMatrix.Matrix[0, 1] = c;
+            _textMatrix.Matrix[1, 1] = d;
+            _textMatrix.Matrix[2, 1] = 0;
+            _textMatrix.Matrix[0, 2] = e;
+            _textMatrix.Matrix[1, 2] = f;
+            _textMatrix.Matrix[2, 2] = 1;
         }
         
-        private void OpTj(string text)
+        private void OpTextPut(string text)
         {
             if (inText == false) { return; }
             _sbText.Append(text);
@@ -282,14 +339,14 @@ namespace VAR.PdfTools
             }
         }
 
-        private void OpTJ(PdfArray array)
+        private void OpTextPutMultiple(PdfArray array)
         {
             if (inText == false) { return; }
             foreach (IPdfElement elem in array.Values)
             {
                 if(elem is PdfString)
                 {
-                    OpTj(((PdfString)elem).Value);
+                    OpTextPut(((PdfString)elem).Value);
                 }
                 else if(elem is PdfInteger || elem is PdfReal)
                 {
@@ -298,7 +355,7 @@ namespace VAR.PdfTools
                 }
                 else if(elem is PdfArray)
                 {
-                    OpTJ(((PdfArray)elem));
+                    OpTextPutMultiple(((PdfArray)elem));
                 }
             }
         }
@@ -311,37 +368,78 @@ namespace VAR.PdfTools
         {
             foreach (PdfContentAction action in _page.ContentActions)
             {
-                if (action.Token == "BT")
+                // Graphics Operations
+                if (action.Token == "q")
                 {
-                    OpBT();
+                    OpPushGraphState();
+                }
+                else if (action.Token == "Q")
+                {
+                    OpPopGraphState();
+                }
+                else if (action.Token == "cm")
+                {
+                    double a = PdfElement_GetReal(action.Parameters[0], 0);
+                    double b = PdfElement_GetReal(action.Parameters[1], 0);
+                    double c = PdfElement_GetReal(action.Parameters[2], 0);
+                    double d = PdfElement_GetReal(action.Parameters[3], 0);
+                    double e = PdfElement_GetReal(action.Parameters[4], 0);
+                    double f = PdfElement_GetReal(action.Parameters[5], 0);
+                    OpSetGraphMatrix(a, b, c, d, e, f);
+                }
+
+                // Text Operations
+                else if (action.Token == "BT")
+                {
+                    OpBeginText();
                 }
                 else if (action.Token == "ET")
                 {
-                    OpET();
+                    OpEndText();
+                }
+                else if (action.Token == "Tc")
+                {
+                    // FIXME: Char spacing
+                }
+                else if (action.Token == "Tw")
+                {
+                    // FIXME: Word spacing
+                }
+                else if (action.Token == "Tz")
+                {
+                    // FIXME: Horizontal Scale
                 }
                 else if (action.Token == "Tf")
                 {
                     string fontName = ((PdfName)action.Parameters[0]).Value;
                     double fontSize = PdfElement_GetReal(action.Parameters[1], 0);
-                    OpTf(fontName, fontSize);
+                    OpTextFont(fontName, fontSize);
                 }
                 else if (action.Token == "TL")
                 {
                     double leading = PdfElement_GetReal(action.Parameters[0], 0);
-                    OpTL(leading);
+                    OpTextLeading(leading);
+                }
+                else if (action.Token == "Tr")
+                {
+                    // FIXME: Rendering mode
+                }
+                else if (action.Token == "Ts")
+                {
+                    // FIXME: Text rise
                 }
                 else if (action.Token == "Td")
                 {
                     double x = PdfElement_GetReal(action.Parameters[0], 0);
                     double y = PdfElement_GetReal(action.Parameters[1], 0);
-                    OpTd(x, y);
+                    OpTesDisplace(x, y);
                 }
                 else if (action.Token == "TD")
                 {
                     double x = PdfElement_GetReal(action.Parameters[0], 0);
                     double y = PdfElement_GetReal(action.Parameters[1], 0);
-                    OpTL(-y);
-                    OpTd(x, y);
+                    OpTextLeading(-y);
+                    OpTesDisplace(x, y);
                 }
                 else if (action.Token == "Tm")
                 {
@@ -351,30 +449,30 @@ namespace VAR.PdfTools
                     double d = PdfElement_GetReal(action.Parameters[3], 0);
                     double e = PdfElement_GetReal(action.Parameters[4], 0);
                     double f = PdfElement_GetReal(action.Parameters[5], 0);
-                    OpTm(a, b, c, d, e, f);
+                    OpSetTextMatrix(a, b, c, d, e, f);
                 }
                 else if (action.Token == "T*")
                 {
-                    OpTStar();
+                    OpTextLineFeed();
                 }
                 else if (action.Token == "Tj")
                 {
-                    OpTj(((PdfString)action.Parameters[0]).Value);
+                    OpTextPut(((PdfString)action.Parameters[0]).Value);
                 }
                 else if (action.Token == "'")
                 {
-                    OpTStar();
-                    OpTj(((PdfString)action.Parameters[0]).Value);
+                    OpTextLineFeed();
+                    OpTextPut(((PdfString)action.Parameters[0]).Value);
                 }
                 else if (action.Token == "\"")
                 {
                     double wordSpacing = PdfElement_GetReal(action.Parameters[0], 0);
                     double charSpacing = PdfElement_GetReal(action.Parameters[1], 0);
-                    OpTj(((PdfString)action.Parameters[2]).Value);
+                    OpTextPut(((PdfString)action.Parameters[2]).Value);
                 }
                 else if (action.Token == "TJ")
                 {
-                    OpTJ(((PdfArray)action.Parameters[0]));
+                    OpTextPutMultiple(((PdfArray)action.Parameters[0]));
                 }
             }
             FlushTextElement();
