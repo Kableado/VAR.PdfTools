@@ -34,5 +34,29 @@ namespace VAR.PdfTools.Workbench.Properties {
                 this["LastPdfPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastColumnName {
+            get {
+                return ((string)(this["LastColumnName"]));
+            }
+            set {
+                this["LastColumnName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastFieldName {
+            get {
+                return ((string)(this["LastFieldName"]));
+            }
+            set {
+                this["LastFieldName"] = value;
+            }
+        }
     }
 }

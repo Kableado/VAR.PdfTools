@@ -16,11 +16,15 @@ namespace VAR.PdfTools.Workbench
         private void FrmPdfInfo_Load(object sender, EventArgs e)
         {
             txtPdfPath.Text = Properties.Settings.Default.LastPdfPath;
+            txtColumnName.Text = Properties.Settings.Default.LastColumnName;
+            txtFieldName.Text = Properties.Settings.Default.LastFieldName;
         }
 
         private void FrmPdfInfo_FormClosing(object sender, FormClosingEventArgs e)
         {
             Properties.Settings.Default.LastPdfPath = txtPdfPath.Text;
+            Properties.Settings.Default.LastColumnName = txtColumnName.Text;
+            Properties.Settings.Default.LastFieldName = txtFieldName.Text;
             Properties.Settings.Default.Save();
         }
 
@@ -91,5 +95,42 @@ namespace VAR.PdfTools.Workbench
             txtOutput.Lines = lines.ToArray();
         }
 
+        private void btnGetColumn_Click(object sender, EventArgs e)
+        {
+            if (System.IO.File.Exists(txtPdfPath.Text) == false)
+            {
+                MessageBox.Show("File does not exist");
+                return;
+            }
+
+            PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
+            
+            var columnData = new List<string>();
+            foreach (PdfDocumentPage page in doc.Pages)
+            {
+                PdfTextExtractor extractor = new PdfTextExtractor(page);
+                columnData.AddRange(extractor.GetColumn(txtColumnName.Text));
+            }
+            txtOutput.Lines = columnData.ToArray();
+        }
+
+        private void btnGetField_Click(object sender, EventArgs e)
+        {
+            if (System.IO.File.Exists(txtPdfPath.Text) == false)
+            {
+                MessageBox.Show("File does not exist");
+                return;
+            }
+
+            PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
+            
+            var fieldData = new List<string>();
+            foreach (PdfDocumentPage page in doc.Pages)
+            {
+                PdfTextExtractor extractor = new PdfTextExtractor(page);
+                fieldData.Add(extractor.GetField(txtFieldName.Text));
+            }
+            txtOutput.Lines = fieldData.ToArray();
+        }
     }
 }

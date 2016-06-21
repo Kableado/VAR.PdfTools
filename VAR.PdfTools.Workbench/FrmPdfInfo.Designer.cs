@@ -34,13 +34,17 @@
             this.txtPdfPath = new System.Windows.Forms.TextBox();
             this.txtOutput = new System.Windows.Forms.TextBox();
             this.btnProcess = new System.Windows.Forms.Button();
+            this.btnGetColumn = new System.Windows.Forms.Button();
+            this.txtColumnName = new System.Windows.Forms.TextBox();
+            this.txtFieldName = new System.Windows.Forms.TextBox();
+            this.btnGetField = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lblOutputs
             // 
             this.lblOutputs.AutoSize = true;
             this.lblOutputs.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblOutputs.Location = new System.Drawing.Point(12, 48);
+            this.lblOutputs.Location = new System.Drawing.Point(12, 130);
             this.lblOutputs.Name = "lblOutputs";
             this.lblOutputs.Size = new System.Drawing.Size(51, 13);
             this.lblOutputs.TabIndex = 11;
@@ -59,7 +63,7 @@
             // btnBrowse
             // 
             this.btnBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowse.Location = new System.Drawing.Point(323, 23);
+            this.btnBrowse.Location = new System.Drawing.Point(316, 23);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(75, 23);
             this.btnBrowse.TabIndex = 9;
@@ -73,7 +77,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtPdfPath.Location = new System.Drawing.Point(15, 25);
             this.txtPdfPath.Name = "txtPdfPath";
-            this.txtPdfPath.Size = new System.Drawing.Size(302, 20);
+            this.txtPdfPath.Size = new System.Drawing.Size(295, 20);
             this.txtPdfPath.TabIndex = 8;
             // 
             // txtOutput
@@ -84,17 +88,17 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOutput.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtOutput.Location = new System.Drawing.Point(15, 64);
+            this.txtOutput.Location = new System.Drawing.Point(15, 146);
             this.txtOutput.Multiline = true;
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtOutput.Size = new System.Drawing.Size(464, 355);
+            this.txtOutput.Size = new System.Drawing.Size(457, 303);
             this.txtOutput.TabIndex = 7;
             // 
             // btnProcess
             // 
             this.btnProcess.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnProcess.Location = new System.Drawing.Point(404, 23);
+            this.btnProcess.Location = new System.Drawing.Point(397, 23);
             this.btnProcess.Name = "btnProcess";
             this.btnProcess.Size = new System.Drawing.Size(75, 23);
             this.btnProcess.TabIndex = 6;
@@ -102,11 +106,49 @@
             this.btnProcess.UseVisualStyleBackColor = true;
             this.btnProcess.Click += new System.EventHandler(this.btnProcess_Click);
             // 
+            // btnGetColumn
+            // 
+            this.btnGetColumn.Location = new System.Drawing.Point(163, 51);
+            this.btnGetColumn.Name = "btnGetColumn";
+            this.btnGetColumn.Size = new System.Drawing.Size(75, 23);
+            this.btnGetColumn.TabIndex = 12;
+            this.btnGetColumn.Text = "GetColumn";
+            this.btnGetColumn.UseVisualStyleBackColor = true;
+            this.btnGetColumn.Click += new System.EventHandler(this.btnGetColumn_Click);
+            // 
+            // txtColumnName
+            // 
+            this.txtColumnName.Location = new System.Drawing.Point(15, 53);
+            this.txtColumnName.Name = "txtColumnName";
+            this.txtColumnName.Size = new System.Drawing.Size(142, 20);
+            this.txtColumnName.TabIndex = 13;
+            // 
+            // txtFieldName
+            // 
+            this.txtFieldName.Location = new System.Drawing.Point(15, 82);
+            this.txtFieldName.Name = "txtFieldName";
+            this.txtFieldName.Size = new System.Drawing.Size(142, 20);
+            this.txtFieldName.TabIndex = 15;
+            // 
+            // btnGetField
+            // 
+            this.btnGetField.Location = new System.Drawing.Point(163, 80);
+            this.btnGetField.Name = "btnGetField";
+            this.btnGetField.Size = new System.Drawing.Size(75, 23);
+            this.btnGetField.TabIndex = 14;
+            this.btnGetField.Text = "GetField";
+            this.btnGetField.UseVisualStyleBackColor = true;
+            this.btnGetField.Click += new System.EventHandler(this.btnGetField_Click);
+            // 
             // FrmPdfInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(491, 431);
+            this.ClientSize = new System.Drawing.Size(484, 461);
+            this.Controls.Add(this.txtFieldName);
+            this.Controls.Add(this.btnGetField);
+            this.Controls.Add(this.txtColumnName);
+            this.Controls.Add(this.btnGetColumn);
             this.Controls.Add(this.lblOutputs);
             this.Controls.Add(this.lblInputs);
             this.Controls.Add(this.btnBrowse);
@@ -130,5 +172,9 @@
         private System.Windows.Forms.TextBox txtPdfPath;
         private System.Windows.Forms.TextBox txtOutput;
         private System.Windows.Forms.Button btnProcess;
+        private System.Windows.Forms.Button btnGetColumn;
+        private System.Windows.Forms.TextBox txtColumnName;
+        private System.Windows.Forms.TextBox txtFieldName;
+        private System.Windows.Forms.Button btnGetField;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace VAR.PdfTools
@@ -122,6 +123,8 @@ namespace VAR.PdfTools
 
     public class PdfTextElement
     {
+        #region Properties
+
         public PdfFont Font { get; set; }
 
         public double FontSize { get; set; }
@@ -135,6 +138,22 @@ namespace VAR.PdfTools
         public double VisibleWidth { get; set; }
 
         public double VisibleHeight { get; set; }
+
+        #endregion
+
+        #region Public methods
+
+        public double GetX()
+        {
+            return Matrix.Matrix[0, 2];
+        }
+
+        public double GetY()
+        {
+            return Matrix.Matrix[1, 2];
+        }
+
+        #endregion
     }
 
     public class PdfTextExtractor
@@ -216,6 +235,38 @@ namespace VAR.PdfTools
 
             _sbText = new StringBuilder();
             _textWidth = 0;
+        }
+
+        private PdfTextElement FindElementByText(string text)
+        {
+            foreach (PdfTextElement elem in _textElements)
+            {
+                if (elem.VisibleText == text)
+                {
+                    return elem;
+                }
+            }
+            return null;
+        }
+
+        private bool TextElementVerticalIntersection(PdfTextElement elem1, PdfTextElement elem2)
+        {
+            double elem1X1 = elem1.GetX();
+            double elem1X2 = elem1.GetX() + elem1.VisibleWidth;
+            double elem2X1 = elem2.GetX();
+            double elem2X2 = elem2.GetX() + elem2.VisibleWidth;
+
+            return elem1X2 >= elem2X1 && elem2X2 >= elem1X1;
+        }
+
+        private bool TextElementHorizontalIntersection(PdfTextElement elem1, PdfTextElement elem2)
+        {
+            double elem1Y1 = elem1.GetY();
+            double elem1Y2 = elem1.GetY() + elem1.VisibleHeight;
+            double elem2Y1 = elem2.GetY();
+            double elem2Y2 = elem2.GetY() + elem2.VisibleHeight;
+
+            return elem1Y2 >= elem2Y1 && elem2Y2 >= elem1Y1;
         }
 
         #endregion
@@ -448,6 +499,82 @@ namespace VAR.PdfTools
                 }
             }
             FlushTextElement();
+        }
+
+        #endregion
+
+        #region Public methods
+
+        public List<string> GetColumn(string column)
+        {
+            PdfTextElement columnHead = FindElementByText(column);
+            if(columnHead == null)
+            {
+                return new List<string>();
+            }
+            double headY = columnHead.GetY();
+
+            // Get all the elements that intersects vertically and sort
+            var columnData = new List<PdfTextElement>();
+            foreach (PdfTextElement elem in _textElements)
+            {
+                if (TextElementVerticalIntersection(columnHead, elem) == false) { continue; }
+                double elemY = elem.GetY();
+                if (elemY >= headY) { continue; }
+
+                columnData.Add(elem);
+            }
+            columnData = columnData.OrderByDescending(elem => elem.GetY()).ToList();
+
+            // Filter only nearest elements
+            var result = new List<string>();
+            double prevY = headY;
+            double medDiff = 0;
+            bool first = true;
+            foreach (PdfTextElement elem in columnData)
+            {
+                double elemY = elem.GetY();
+                double diff = prevY - elemY;
+                prevY = elemY;
+                if (first)
+                {
+                    first = false;
+                    medDiff = diff;
+                }
+                if (diff > medDiff) { break; }
+                medDiff = (medDiff + diff) / 2;
+
+                result.Add(elem.VisibleText);
+            }
+            return result;
+        }
+
+        public string GetField(string column)
+        {
+            PdfTextElement fieldTitle = FindElementByText(column);
+            if (fieldTitle == null)
+            {
+                return null;
+            }
+            double titleX = fieldTitle.GetX();
+            var fieldData = new List<PdfTextElement>();
+
+
+            foreach (PdfTextElement elem in _textElements)
+            {
+                if (TextElementHorizontalIntersection(fieldTitle, elem) == false) { continue; }
+                double elemX = elem.GetX();
+                if (elemX <= titleX) { continue; }
+
+                fieldData.Add(elem);
+            }
+
+            if(fieldData.Count == 0)
+            {
+                return null;
+            }
+
+            return fieldData.OrderBy(elem => elem.GetX()).FirstOrDefault().VisibleText;
         }
 
         #endregion
