@@ -163,4 +163,20 @@ namespace VAR.PdfTools
         public IPdfElement Data { get; set; }
         public int UsageCount { get; set; } = 0;
     }
+
+    public static class PdfElementUtils
+    {
+        public static double GetReal(IPdfElement elem, double defaultValue)
+        {
+            if (elem is PdfInteger)
+            {
+                return ((PdfInteger)elem).Value;
+            }
+            if (elem is PdfReal)
+            {
+                return ((PdfReal)elem).Value;
+            }
+            return defaultValue;
+        }
+    }
 }

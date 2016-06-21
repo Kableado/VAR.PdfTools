@@ -124,7 +124,7 @@ namespace VAR.PdfTools
     {
         public PdfFont Font { get; set; }
 
-        public double TextSize { get; set; }
+        public double FontSize { get; set; }
 
         public Matrix3x3 Matrix { get; set; }
 
@@ -133,6 +133,8 @@ namespace VAR.PdfTools
         public string VisibleText { get; set; }
 
         public double VisibleWidth { get; set; }
+
+        public double VisibleHeight { get; set; }
     }
 
     public class PdfTextExtractor
@@ -180,38 +182,6 @@ namespace VAR.PdfTools
 
         #region Utility methods
 
-        private string PdfElement_GetOnlyStrings(IPdfElement elem)
-        {
-            if (elem is PdfString)
-            {
-                return ((PdfString)elem).Value;
-            }
-            if (elem is PdfArray)
-            {
-                var sbText = new StringBuilder();
-                PdfArray array = elem as PdfArray;
-                foreach (IPdfElement subElem in array.Values)
-                {
-                    sbText.Append(PdfElement_GetOnlyStrings(subElem));
-                }
-                return sbText.ToString();
-            }
-            return string.Empty;
-        }
-
-        private double PdfElement_GetReal(IPdfElement elem, double defaultValue)
-        {
-            if (elem is PdfInteger)
-            {
-                return ((PdfInteger)elem).Value;
-            }
-            if (elem is PdfReal)
-            {
-                return ((PdfReal)elem).Value;
-            }
-            return defaultValue;
-        }
-
         private string PdfString_ToUnicode(string text, PdfFont font)
         {
             if (font == null)
@@ -235,11 +205,13 @@ namespace VAR.PdfTools
             }
 
             PdfTextElement textElem = new PdfTextElement();
-            textElem.Matrix = _textMatrix.Multiply(_graphicsMatrix);
             textElem.Font = _font;
+            textElem.FontSize = _fontSize;
+            textElem.Matrix = _textMatrix.Multiply(_graphicsMatrix);
             textElem.RawText = _sbText.ToString();
             textElem.VisibleText = PdfString_ToUnicode(textElem.RawText, _font);
             textElem.VisibleWidth = _textWidth * textElem.Matrix.Matrix[0, 0];
+            textElem.VisibleHeight = (_font.Height * _fontSize) * textElem.Matrix.Matrix[1, 1];
             _textElements.Add(textElem);
 
             _sbText = new StringBuilder();
@@ -350,7 +322,7 @@ namespace VAR.PdfTools
                 }
                 else if(elem is PdfInteger || elem is PdfReal)
                 {
-                    double spacing = PdfElement_GetReal(elem, 0);
+                    double spacing = PdfElementUtils.GetReal(elem, 0);
                     _textWidth += spacing; 
                 }
                 else if(elem is PdfArray)
@@ -379,12 +351,12 @@ namespace VAR.PdfTools
                 }
                 else if (action.Token == "cm")
                 {
-                    double a = PdfElement_GetReal(action.Parameters[0], 0);
-                    double b = PdfElement_GetReal(action.Parameters[1], 0);
-                    double c = PdfElement_GetReal(action.Parameters[2], 0);
-                    double d = PdfElement_GetReal(action.Parameters[3], 0);
-                    double e = PdfElement_GetReal(action.Parameters[4], 0);
-                    double f = PdfElement_GetReal(action.Parameters[5], 0);
+                    double a = PdfElementUtils.GetReal(action.Parameters[0], 0);
+                    double b = PdfElementUtils.GetReal(action.Parameters[1], 0);
+                    double c = PdfElementUtils.GetReal(action.Parameters[2], 0);
+                    double d = PdfElementUtils.GetReal(action.Parameters[3], 0);
+                    double e = PdfElementUtils.GetReal(action.Parameters[4], 0);
+                    double f = PdfElementUtils.GetReal(action.Parameters[5], 0);
                     OpSetGraphMatrix(a, b, c, d, e, f);
                 }
 
@@ -412,12 +384,12 @@ namespace VAR.PdfTools
                 else if (action.Token == "Tf")
                 {
                     string fontName = ((PdfName)action.Parameters[0]).Value;
-                    double fontSize = PdfElement_GetReal(action.Parameters[1], 0);
+                    double fontSize = PdfElementUtils.GetReal(action.Parameters[1], 0);
                     OpTextFont(fontName, fontSize);
                 }
                 else if (action.Token == "TL")
                 {
-                    double leading = PdfElement_GetReal(action.Parameters[0], 0);
+                    double leading = PdfElementUtils.GetReal(action.Parameters[0], 0);
                     OpTextLeading(leading);
                 }
                 else if (action.Token == "Tr")
@@ -430,25 +402,25 @@ namespace VAR.PdfTools
                 }
                 else if (action.Token == "Td")
                 {
-                    double x = PdfElement_GetReal(action.Parameters[0], 0);
-                    double y = PdfElement_GetReal(action.Parameters[1], 0);
+                    double x = PdfElementUtils.GetReal(action.Parameters[0], 0);
+                    double y = PdfElementUtils.GetReal(action.Parameters[1], 0);
                     OpTesDisplace(x, y);
                 }
                 else if (action.Token == "TD")
                 {
-                    double x = PdfElement_GetReal(action.Parameters[0], 0);
-                    double y = PdfElement_GetReal(action.Parameters[1], 0);
+                    double x = PdfElementUtils.GetReal(action.Parameters[0], 0);
+                    double y = PdfElementUtils.GetReal(action.Parameters[1], 0);
                     OpTextLeading(-y);
                     OpTesDisplace(x, y);
                 }
                 else if (action.Token == "Tm")
                 {
-                    double a = PdfElement_GetReal(action.Parameters[0], 0);
-                    double b = PdfElement_GetReal(action.Parameters[1], 0);
-                    double c = PdfElement_GetReal(action.Parameters[2], 0);
-                    double d = PdfElement_GetReal(action.Parameters[3], 0);
-                    double e = PdfElement_GetReal(action.Parameters[4], 0);
-                    double f = PdfElement_GetReal(action.Parameters[5], 0);
+                    double a = PdfElementUtils.GetReal(action.Parameters[0], 0);
+                    double b = PdfElementUtils.GetReal(action.Parameters[1], 0);
+                    double c = PdfElementUtils.GetReal(action.Parameters[2], 0);
+                    double d = PdfElementUtils.GetReal(action.Parameters[3], 0);
+                    double e = PdfElementUtils.GetReal(action.Parameters[4], 0);
+                    double f = PdfElementUtils.GetReal(action.Parameters[5], 0);
                     OpSetTextMatrix(a, b, c, d, e, f);
                 }
                 else if (action.Token == "T*")
@@ -466,8 +438,8 @@ namespace VAR.PdfTools
                 }
                 else if (action.Token == "\"")
                 {
-                    double wordSpacing = PdfElement_GetReal(action.Parameters[0], 0);
-                    double charSpacing = PdfElement_GetReal(action.Parameters[1], 0);
+                    double wordSpacing = PdfElementUtils.GetReal(action.Parameters[0], 0);
+                    double charSpacing = PdfElementUtils.GetReal(action.Parameters[1], 0);
                     OpTextPut(((PdfString)action.Parameters[2]).Value);
                 }
                 else if (action.Token == "TJ")

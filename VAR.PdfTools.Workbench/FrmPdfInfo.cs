@@ -68,10 +68,10 @@ namespace VAR.PdfTools.Workbench
                 {
                     PdfArray cropBox = page.BaseData.Values["CropBox"] as PdfArray;
                     lines.Add(string.Format("Page({0} of {1}): {2} {3} {4} {5}", pageNumber, doc.Pages.Count,
-                            ((PdfInteger)cropBox.Values[0]).Value,
-                            ((PdfInteger)cropBox.Values[1]).Value,
-                            ((PdfInteger)cropBox.Values[2]).Value,
-                            ((PdfInteger)cropBox.Values[3]).Value));
+                            PdfElementUtils.GetReal(cropBox.Values[0], 0),
+                            PdfElementUtils.GetReal(cropBox.Values[1], 0),
+                            PdfElementUtils.GetReal(cropBox.Values[2], 0),
+                            PdfElementUtils.GetReal(cropBox.Values[3], 0)));
                 }
                 else
                 {
@@ -82,8 +82,9 @@ namespace VAR.PdfTools.Workbench
                 PdfTextExtractor extractor = new PdfTextExtractor(page);
                 foreach (PdfTextElement textElement in extractor.Elements)
                 {
-                    lines.Add(string.Format("Text({0}, {1})({2}): \"{3}\"", 
-                        textElement.Matrix.Matrix[0, 2], textElement.Matrix.Matrix[1, 2], textElement.VisibleWidth, textElement.VisibleText));
+                    lines.Add(string.Format("Text({0}, {1})({2}, {3}): \"{4}\"", 
+                        textElement.Matrix.Matrix[0, 2], textElement.Matrix.Matrix[1, 2], textElement.VisibleWidth, textElement.VisibleHeight, 
+                        textElement.VisibleText));
                 }
             }
 

@@ -13,12 +13,16 @@ namespace VAR.PdfTools
 
         private Dictionary<char, double> _widths = null;
 
+        private double _height = 1.0;
+
         #endregion
 
         #region Properties
 
         public PdfDictionary BaseData { get { return _baseData; } }
         
+        public double Height { get { return _height; } }
+
         #endregion
 
         #region Life cycle
@@ -39,13 +43,13 @@ namespace VAR.PdfTools
                 _toUnicode = parser.ParseToUnicode();
             }
 
-            if (BaseData.Values.ContainsKey("FirstChar") && baseData.Values.ContainsKey("LastChar") && baseData.Values.ContainsKey("Widths"))
+            if (_baseData.Values.ContainsKey("FirstChar") && _baseData.Values.ContainsKey("LastChar") && _baseData.Values.ContainsKey("Widths"))
             {
                 double glyphSpaceToTextSpace = 1000.0; // FIXME: SubType:Type3 Uses a FontMatrix that may not correspond to 1/1000th
                 _widths = new Dictionary<char, double>();
-                char firstChar = (char)baseData.GetParamAsInt("FirstChar");
-                char lastChar = (char)baseData.GetParamAsInt("LastChar");
-                PdfArray widths = baseData.Values["Widths"] as PdfArray;
+                char firstChar = (char)_baseData.GetParamAsInt("FirstChar");
+                char lastChar = (char)_baseData.GetParamAsInt("LastChar");
+                PdfArray widths = _baseData.Values["Widths"] as PdfArray;
                 char actualChar = firstChar;
                 foreach (IPdfElement elem in widths.Values)
                 {
@@ -64,6 +68,7 @@ namespace VAR.PdfTools
                         continue;
                     }
                 }
+                // FIMXE: Calculate real height
             }
         }
 
