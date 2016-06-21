@@ -15,6 +15,8 @@ namespace VAR.PdfTools
 
         private double _height = 1.0;
 
+        private bool _tainted = false;
+
         #endregion
 
         #region Properties
@@ -22,6 +24,8 @@ namespace VAR.PdfTools
         public PdfDictionary BaseData { get { return _baseData; } }
         
         public double Height { get { return _height; } }
+
+        public bool Tainted { get { return _tainted; } }
 
         #endregion
 
@@ -33,7 +37,8 @@ namespace VAR.PdfTools
             string type = baseData.GetParamAsString("Type");
             if (type != "Font")
             {
-                throw new Exception(string.Format("PdfFont: Expected dictionary of type:\"Font\". Found: {0}", type));
+                // NOTE: Type="Font" is Required by the standard, continuing anyway
+                _tainted = true;
             }
 
             if (baseData.Values.ContainsKey("ToUnicode"))

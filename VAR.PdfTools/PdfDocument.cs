@@ -210,7 +210,7 @@ namespace VAR.PdfTools
             var parser = new PdfParser(data);
             do
             {
-                PdfObject obj = parser.ParseObject();
+                PdfObject obj = parser.ParseObject(doc.Objects);
                 if (obj != null)
                 {
                     if (obj.Data is PdfStream)

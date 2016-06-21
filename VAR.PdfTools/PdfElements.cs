@@ -168,6 +168,10 @@ namespace VAR.PdfTools
     {
         public static double GetReal(IPdfElement elem, double defaultValue)
         {
+            if(elem == null)
+            {
+                return defaultValue;
+            }
             if (elem is PdfInteger)
             {
                 return ((PdfInteger)elem).Value;
@@ -175,6 +179,22 @@ namespace VAR.PdfTools
             if (elem is PdfReal)
             {
                 return ((PdfReal)elem).Value;
+            }
+            return defaultValue;
+        }
+        public static long GetInt(IPdfElement elem, long defaultValue)
+        {
+            if (elem == null)
+            {
+                return defaultValue;
+            }
+            if (elem is PdfInteger)
+            {
+                return ((PdfInteger)elem).Value;
+            }
+            if (elem is PdfReal)
+            {
+                return (long)((PdfReal)elem).Value;
             }
             return defaultValue;
         }

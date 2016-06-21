@@ -90,7 +90,7 @@ namespace VAR.PdfTools
                 }
                 position++;
             } while (position < _stream.Length);
-            return 0;
+            return -1;
         }
 
         private byte PeekChar()
@@ -194,6 +194,30 @@ namespace VAR.PdfTools
                     // EOS
                     break;
                 }
+            }
+        }
+
+        private void SkipWhitespaceBack()
+        {
+            while (IsWhitespace(PeekChar()))
+            {
+                if (_streamPosition == 0)
+                {
+                    break;
+                }
+                _streamPosition--;
+            }
+        }
+
+        private void SkipDigitsBack()
+        {
+            while (IsDigit(PeekChar()))
+            {
+                if (_streamPosition == 0)
+                {
+                    break;
+                }
+                _streamPosition--;
             }
         }
 
@@ -718,11 +742,23 @@ namespace VAR.PdfTools
             return Encoding.BigEndianUnicode.GetString(byteArray);
         }
 
+        public IPdfElement SearchObjectID(List<PdfObject> knownObjects, long objectID)
+        {
+            foreach (PdfObject obj in knownObjects)
+            {
+                if (obj.ObjectID == objectID)
+                {
+                    return obj.Data;
+                }
+            }
+            return null;
+        }
+
         #endregion
 
         #region Public methods
 
-        public PdfObject ParseObject()
+        public PdfObject ParseObject(List<PdfObject> knownObjects)
         {
             PdfObject obj = null;
             long startPosition = _streamPosition;
@@ -757,12 +793,19 @@ namespace VAR.PdfTools
                                 throw new Exception(string.Format("Stream after a not dictionary element at: {0}", _streamPosition));
                             }
                             SkipEndOfLine();
-                            long length;
-                            if (streamDict.Values.ContainsKey("Length") && streamDict.Values["Length"] is PdfInteger)
+
+                            // Find the length of the stream
+                            long length = -1;
+                            if (streamDict.Values.ContainsKey("Length") )
                             {
-                                length = ((PdfInteger)streamDict.Values["Length"]).Value;
+                                length = PdfElementUtils.GetInt(streamDict.Values["Length"], -1);
+                                if (length == -1 && streamDict.Values["Length"] is PdfObjectReference)
+                                {
+                                    IPdfElement lenghtObj = SearchObjectID(knownObjects, ((PdfObjectReference) streamDict.Values["Length"]).ObjectID);
+                                    length = PdfElementUtils.GetInt(lenghtObj, -1);
+                                }
                             }
-                            else
+                            if(length == -1)
                             {
                                 byte lineFeed = 0x0A;
                                 byte carriageReturn = 0x0D;
@@ -773,6 +816,8 @@ namespace VAR.PdfTools
                                     new char[] {'e', 'n', 'd', 's', 't', 'r', 'e', 'a', 'm', (char)carriageReturn, (char)lineFeed},
                                 });
                             }
+
+                            // Get the stream
                             byte[] streamBody = GetRawData(length);
                             SkipEndOfLine();
                             endToken = ParseToken();
@@ -857,7 +902,58 @@ namespace VAR.PdfTools
                         SkipWhitespace();
                         continue;
                     }
-                    throw new Exception(string.Format("Expected objectID at {0}", startPosition));
+
+                    // Try to find an object marker
+                    byte lineFeed = 0x0A;
+                    byte carriageReturn = 0x0D;
+                    long distToObject = MeasureToMarkers(new char[][] {
+                                    new char[] {' ', 'o', 'b', 'j', (char)lineFeed},
+                                    new char[] {' ', 'o', 'b', 'j', (char)carriageReturn, (char)lineFeed},
+                                });
+                    if (distToObject > 0)
+                    {
+                        // Object marker found, backtrack and retry
+                        long originalPosition = _streamPosition;
+                        _streamPosition += distToObject;
+                        long marker = _streamPosition;
+                        SkipWhitespaceBack();
+                        if (_streamPosition == marker)
+                        {
+                            // Abort backtrack, skip garbage
+                            _streamPosition = originalPosition + distToObject + 4;
+                            continue;
+                        }
+                        marker = _streamPosition;
+                        SkipDigitsBack();
+                        if (_streamPosition == marker)
+                        {
+                            // Abort backtrack, skip garbage
+                            _streamPosition = originalPosition + distToObject + 4;
+                            continue;
+                        }
+                        marker = _streamPosition;
+                        SkipWhitespaceBack();
+                        if (_streamPosition == marker)
+                        {
+                            // Abort backtrack, skip garbage
+                            _streamPosition = originalPosition + distToObject + 4;
+                            continue;
+                        }
+                        marker = _streamPosition;
+                        SkipDigitsBack();
+                        if (_streamPosition == marker)
+                        {
+                            // Abort backtrack, skip garbage
+                            _streamPosition = originalPosition + distToObject + 4;
+                            continue;
+                        }
+                        NextChar();
+                    }
+                    else
+                    {
+                        // No more obj markers found, abort all.
+                        _streamPosition = _stream.Length;
+                    }
                 }
             } while (IsEndOfStream() == false);
             return obj;
@@ -919,7 +1015,6 @@ namespace VAR.PdfTools
                     if (string.IsNullOrEmpty(token))
                     {
                         break;
-                        //throw new Exception(string.Format("ParseContet: Expected token found nothing, at: {0}", _streamPosition));
                     }
                     PdfContentAction action = new PdfContentAction(token, elems);
                     elems = new List<IPdfElement>();
