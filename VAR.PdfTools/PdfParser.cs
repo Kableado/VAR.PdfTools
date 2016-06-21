@@ -14,6 +14,8 @@ namespace VAR.PdfTools
         private byte[] _stream = null;
         private long _streamPosition = 0;
 
+        private string _decimalSeparator = ".";
+
         #endregion
 
         #region Creator
@@ -21,6 +23,13 @@ namespace VAR.PdfTools
         public PdfParser(byte[] stream)
         {
             _stream = stream;
+
+            // Intentar usar el separador decimal de la cultura
+            try
+            {
+                _decimalSeparator = CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator;
+            }
+            catch { }
         }
 
         #endregion
@@ -406,7 +415,7 @@ namespace VAR.PdfTools
             {
                 if (PeekChar() == '.')
                 {
-                    sbNumber.Append(CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
+                    sbNumber.Append(_decimalSeparator);
                     dotCount++;
                 }
                 else
