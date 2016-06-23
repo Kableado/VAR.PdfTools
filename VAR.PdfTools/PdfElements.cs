@@ -26,44 +26,44 @@ namespace VAR.PdfTools
 
     public class PdfBoolean : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.Boolean;
+        public PdfElementTypes Type { get { return PdfElementTypes.Boolean; } }
         public bool Value { get; set; }
     }
 
     public class PdfInteger : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.Integer;
+        public PdfElementTypes Type { get { return PdfElementTypes.Integer; } }
         public long Value { get; set; }
     }
 
     public class PdfReal : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.Real;
+        public PdfElementTypes Type { get { return PdfElementTypes.Real; } }
         public double Value { get; set; }
     }
 
     public class PdfString : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.String;
+        public PdfElementTypes Type { get { return PdfElementTypes.String; } }
         public string Value { get; set; }
     }
 
     public class PdfName : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.Name;
+        public PdfElementTypes Type { get { return PdfElementTypes.Name; } }
         public string Value { get; set; }
     }
 
     public class PdfArray : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.Array;
+        public PdfElementTypes Type { get { return PdfElementTypes.Array; } }
         private List<IPdfElement> _values = new List<IPdfElement>();
         public List<IPdfElement> Values { get { return _values; } }
     }
 
     public class PdfDictionary : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.Dictionary;
+        public PdfElementTypes Type { get { return PdfElementTypes.Dictionary; } }
         private Dictionary<string, IPdfElement> _values = new Dictionary<string, IPdfElement>();
         public Dictionary<string, IPdfElement> Values { get { return _values; } }
 
@@ -112,7 +112,7 @@ namespace VAR.PdfTools
             {
                 PdfArray array = value as PdfArray;
                 MemoryStream memStream = new MemoryStream();
-                foreach(IPdfElement elem in array.Values)
+                foreach (IPdfElement elem in array.Values)
                 {
                     PdfStream stream = elem as PdfStream;
                     if (stream == null) { continue; }
@@ -135,19 +135,19 @@ namespace VAR.PdfTools
 
     public class PdfNull : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.Null;
+        public PdfElementTypes Type { get { return PdfElementTypes.Null; } }
     }
 
     public class PdfObjectReference : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.ObjectReference;
+        public PdfElementTypes Type { get { return PdfElementTypes.ObjectReference; } }
         public int ObjectID { get; set; }
         public int ObjectGeneration { get; set; }
     }
 
     public class PdfStream : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.Stream;
+        public PdfElementTypes Type { get { return PdfElementTypes.Stream; } }
         public PdfDictionary Dictionary { get; set; }
         public byte[] Data { get; set; }
 
@@ -157,18 +157,18 @@ namespace VAR.PdfTools
 
     public class PdfObject : IPdfElement
     {
-        public PdfElementTypes Type { get; private set; } = PdfElementTypes.Object;
+        public PdfElementTypes Type { get { return PdfElementTypes.Object; } }
         public int ObjectID { get; set; }
         public int ObjectGeneration { get; set; }
         public IPdfElement Data { get; set; }
-        public int UsageCount { get; set; } = 0;
+        public int UsageCount { get; set; }
     }
 
     public static class PdfElementUtils
     {
         public static double GetReal(IPdfElement elem, double defaultValue)
         {
-            if(elem == null)
+            if (elem == null)
             {
                 return defaultValue;
             }

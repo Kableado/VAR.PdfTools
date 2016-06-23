@@ -193,7 +193,7 @@ namespace VAR.PdfTools
         }
 
         #endregion
-
+        
         #region Public methods
 
         public static PdfDocument Load(string filename)
