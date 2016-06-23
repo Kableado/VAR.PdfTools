@@ -23,13 +23,6 @@ namespace VAR.PdfTools
         public PdfParser(byte[] stream)
         {
             _stream = stream;
-
-            // Intentar usar el separador decimal de la cultura
-            try
-            {
-                _decimalSeparator = CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator;
-            }
-            catch { }
         }
 
         #endregion
@@ -436,7 +429,7 @@ namespace VAR.PdfTools
                 if (dotCount == 1)
                 {
                     PdfReal obj = new PdfReal();
-                    obj.Value = Convert.ToDouble(sbNumber.ToString());
+                    obj.Value = Convert.ToDouble(sbNumber.ToString(), CultureInfo.InvariantCulture);
                     return obj;
                 }
             }
