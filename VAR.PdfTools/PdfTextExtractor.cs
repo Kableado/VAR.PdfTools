@@ -316,12 +316,13 @@ namespace VAR.PdfTools
             return sbResult.ToString();
         }
 
-        private PdfTextElement FindElementByText(string text)
+        private PdfTextElement FindElementByText(string text, bool fuzzy)
         {
-            string simpleText = SimplifyText(text);
+            string matchingText = fuzzy ? SimplifyText(text) : text;
             foreach (PdfTextElement elem in _textElements)
             {
-                if (SimplifyText(elem.VisibleText) == simpleText)
+                string elemText = fuzzy ? SimplifyText(elem.VisibleText) : elem.VisibleText;
+                if (elemText == matchingText)
                 {
                     return elem;
                 }
@@ -587,7 +588,12 @@ namespace VAR.PdfTools
 
         public List<string> GetColumn(string column)
         {
-            PdfTextElement columnHead = FindElementByText(column);
+            return GetColumn(column, true);
+        }
+
+        public List<string> GetColumn(string column, bool fuzzy)
+        {
+            PdfTextElement columnHead = FindElementByText(column, fuzzy);
             if(columnHead == null)
             {
                 return new List<string>();
@@ -657,9 +663,14 @@ namespace VAR.PdfTools
             return result;
         }
 
-        public string GetField(string column)
+        public string GetField(string field)
         {
-            PdfTextElement fieldTitle = FindElementByText(column);
+            return GetField(field, true);
+        }
+
+        public string GetField(string field, bool fuzzy)
+        {
+            PdfTextElement fieldTitle = FindElementByText(field, fuzzy);
             if (fieldTitle == null)
             {
                 return null;
