@@ -139,6 +139,9 @@ namespace VAR.PdfTools
 
         public double VisibleHeight { get; set; }
 
+        private List<PdfTextElement> _childs = new List<PdfTextElement>();
+        public List<PdfTextElement> Childs { get { return _childs; } }
+
         #endregion
 
         #region Public methods
@@ -179,6 +182,8 @@ namespace VAR.PdfTools
         private StringBuilder _sbText = new StringBuilder();
         private double _textWidth = 0;
 
+        PdfTextElement _currentTextElement = null;
+
         #endregion
 
         #region Properties
@@ -216,13 +221,8 @@ namespace VAR.PdfTools
             return sbText.ToString();
         }
 
-        private void FlushTextElement()
+        private PdfTextElement BuildTextElement()
         {
-            if (_sbText.Length == 0)
-            {
-                return;
-            }
-
             PdfTextElement textElem = new PdfTextElement();
             textElem.Font = _font;
             textElem.FontSize = _fontSize;
@@ -231,7 +231,60 @@ namespace VAR.PdfTools
             textElem.VisibleText = PdfString_ToUnicode(textElem.RawText, _font);
             textElem.VisibleWidth = _textWidth * textElem.Matrix.Matrix[0, 0];
             textElem.VisibleHeight = (_font.Height * _fontSize) * textElem.Matrix.Matrix[1, 1];
-            _textElements.Add(textElem);
+            return textElem;
+        }
+
+        private void FlushTextElementSoft()
+        {
+            if (_sbText.Length == 0)
+            {
+                return;
+            }
+
+            PdfTextElement textElem = BuildTextElement();
+            if (_currentTextElement == null)
+            {
+                _currentTextElement = new PdfTextElement();
+                _currentTextElement.Font = null;
+                _currentTextElement.FontSize = -1;
+                _currentTextElement.Matrix = textElem.Matrix.Copy();
+                _currentTextElement.RawText = string.Empty;
+                _currentTextElement.VisibleText = string.Empty;
+                _currentTextElement.VisibleWidth = 0;
+                _currentTextElement.VisibleHeight = 0;
+            }
+            _currentTextElement.VisibleText += textElem.VisibleText;
+            _currentTextElement.VisibleWidth += textElem.VisibleWidth;
+            _currentTextElement.VisibleHeight = System.Math.Max(_currentTextElement.VisibleHeight, textElem.VisibleHeight);
+            _currentTextElement.Childs.Add(textElem);
+
+            _sbText = new StringBuilder();
+            _textWidth = 0;
+        }
+
+        private void FlushTextElement()
+        {
+            if (_sbText.Length == 0)
+            {
+                if (_currentTextElement != null)
+                {
+                    _textElements.Add(_currentTextElement);
+                    _currentTextElement = null;
+                }
+                return;
+            }
+
+            if (_currentTextElement != null)
+            {
+                FlushTextElementSoft();
+                _textElements.Add(_currentTextElement);
+                _currentTextElement = null;
+            }
+            else
+            {
+                PdfTextElement textElem = BuildTextElement();
+                _textElements.Add(textElem);
+            }
 
             _sbText = new StringBuilder();
             _textWidth = 0;
@@ -305,13 +358,13 @@ namespace VAR.PdfTools
 
         private void OpEndText()
         {
-            FlushTextElement();
+            FlushTextElementSoft();
             inText = false;
         }
 
         private void OpTextFont(string fontName, double size)
         {
-            FlushTextElement();
+            FlushTextElementSoft();
             _font = _page.Fonts[fontName];
             _fontSize = size;
         }
