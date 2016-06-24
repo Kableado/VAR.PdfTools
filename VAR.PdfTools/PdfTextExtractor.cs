@@ -262,13 +262,22 @@ namespace VAR.PdfTools
             _textWidth = 0;
         }
 
+        private void AddTextElement(PdfTextElement textElement)
+        {
+            if (string.IsNullOrEmpty(textElement.VisibleText.Trim()))
+            {
+                return;
+            }
+            _textElements.Add(textElement);
+        }
+
         private void FlushTextElement()
         {
             if (_sbText.Length == 0)
             {
                 if (_currentTextElement != null)
                 {
-                    _textElements.Add(_currentTextElement);
+                    AddTextElement(_currentTextElement);
                     _currentTextElement = null;
                 }
                 return;
@@ -277,24 +286,42 @@ namespace VAR.PdfTools
             if (_currentTextElement != null)
             {
                 FlushTextElementSoft();
-                _textElements.Add(_currentTextElement);
+                AddTextElement(_currentTextElement);
                 _currentTextElement = null;
             }
             else
             {
                 PdfTextElement textElem = BuildTextElement();
-                _textElements.Add(textElem);
+                AddTextElement(textElem);
             }
 
             _sbText = new StringBuilder();
             _textWidth = 0;
         }
 
+        private string SimplifyText(string text)
+        {
+            StringBuilder sbResult = new StringBuilder();
+            foreach (char c in text)
+            {
+                if (c == '.' || c == ',' || 
+                    c == ':' || c == ';' || 
+                    c == '-' || c == '_' || 
+                    c == ' ' || c == '\t')
+                {
+                    continue;
+                }
+                sbResult.Append(char.ToUpper(c));
+            }
+            return sbResult.ToString();
+        }
+
         private PdfTextElement FindElementByText(string text)
         {
+            string simpleText = SimplifyText(text);
             foreach (PdfTextElement elem in _textElements)
             {
-                if (elem.VisibleText == text)
+                if (SimplifyText(elem.VisibleText) == simpleText)
                 {
                     return elem;
                 }
@@ -566,37 +593,65 @@ namespace VAR.PdfTools
                 return new List<string>();
             }
             double headY = columnHead.GetY();
+            double headX1 = columnHead.GetX();
+            double headX2 = headX1 + columnHead.VisibleWidth;
 
-            // Get all the elements that intersects vertically and sort
-            var columnData = new List<PdfTextElement>();
+            // Determine horizontal extent
+            double extentX1 = double.MinValue;
+            double extentX2 = double.MaxValue;
+            foreach (PdfTextElement elem in _textElements)
+            {
+                if(elem == columnHead){continue;}
+                if (TextElementHorizontalIntersection(columnHead, elem) == false) { continue; }
+                double elemX1 = elem.GetX();
+                double elemX2 = elemX1 + elem.VisibleWidth;
+
+                if (elemX2 < headX1)
+                {
+                    if (elemX2 > extentX1)
+                    {
+                        extentX1 = elemX2;
+                    }
+                }
+                if (elemX1 > headX2)
+                {
+                    if (elemX1 < extentX2)
+                    {
+                        extentX2 = elemX1;
+                    }
+                }
+
+            }
+
+            // Get all the elements that intersects vertically, are down and sort results
+            var columnDataRaw = new List<PdfTextElement>();
             foreach (PdfTextElement elem in _textElements)
             {
                 if (TextElementVerticalIntersection(columnHead, elem) == false) { continue; }
+
+                // Only intems down the column
                 double elemY = elem.GetY();
                 if (elemY >= headY) { continue; }
 
+                columnDataRaw.Add(elem);
+            }
+            columnDataRaw = columnDataRaw.OrderByDescending(elem => elem.GetY()).ToList();
+
+            // Only items completelly inside extents, amd break on the first element outside
+            var columnData = new List<PdfTextElement>();
+            foreach (PdfTextElement elem in columnDataRaw)
+            {
+                double elemX1 = elem.GetX();
+                double elemX2 = elemX1 + elem.VisibleWidth;
+                if (elemX1 < extentX1 || elemX2 > extentX2) { break; }
+
                 columnData.Add(elem);
             }
-            columnData = columnData.OrderByDescending(elem => elem.GetY()).ToList();
 
-            // Filter only nearest elements
+            // Emit result
             var result = new List<string>();
-            double prevY = headY;
-            double medDiff = 0;
-            bool first = true;
             foreach (PdfTextElement elem in columnData)
             {
-                double elemY = elem.GetY();
-                double diff = prevY - elemY;
-                prevY = elemY;
-                if (first)
-                {
-                    first = false;
-                    medDiff = diff;
-                }
-                if (diff > medDiff) { break; }
-                medDiff = (medDiff + diff) / 2;
-
                 result.Add(elem.VisibleText);
             }
             return result;
