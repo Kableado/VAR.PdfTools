@@ -85,8 +85,9 @@ namespace VAR.PdfTools.Workbench
                 PdfTextExtractor extractor = new PdfTextExtractor(page);
                 foreach (PdfTextElement textElement in extractor.Elements)
                 {
-                    lines.Add(string.Format("Text({0}, {1})({2}, {3}): \"{4}\"", 
-                        textElement.Matrix.Matrix[0, 2], textElement.Matrix.Matrix[1, 2], textElement.VisibleWidth, textElement.VisibleHeight, 
+                    lines.Add(string.Format("Text({0}, {1})({2}, {3})[{4}]: \"{5}\"",
+                        textElement.Matrix.Matrix[0, 2], textElement.Matrix.Matrix[1, 2], textElement.VisibleWidth, textElement.VisibleHeight,
+                        textElement.Font == null ? string.Empty : textElement.Font.Name,
                         textElement.VisibleText));
                 }
             }

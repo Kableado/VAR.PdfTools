@@ -15,6 +15,8 @@ namespace VAR.PdfTools
 
         private double _height = 1.0;
 
+        private string _name = string.Empty;
+
         private bool _tainted = false;
 
         #endregion
@@ -24,6 +26,8 @@ namespace VAR.PdfTools
         public PdfDictionary BaseData { get { return _baseData; } }
         
         public double Height { get { return _height; } }
+
+        public string Name { get { return _name; } set { _name = value; } }
 
         public bool Tainted { get { return _tainted; } }
 

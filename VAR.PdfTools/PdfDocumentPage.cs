@@ -58,6 +58,7 @@ namespace VAR.PdfTools
                 foreach (KeyValuePair<string, IPdfElement> pair in fonts.Values)
                 {
                     var font = new PdfFont(pair.Value as PdfDictionary);
+                    font.Name = pair.Key;
                     _fonts.Add(pair.Key, font);
                 }
             }
