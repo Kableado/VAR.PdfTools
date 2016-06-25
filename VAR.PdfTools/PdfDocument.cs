@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 
 namespace VAR.PdfTools
@@ -35,52 +34,15 @@ namespace VAR.PdfTools
         #endregion
 
         #region Private methods
-
-        private static byte[] DecodeFlateStreamData(byte[] streamData)
+        
+        private static void ApplyFilterToStream(PdfStream stream, string filter)
         {
-            MemoryStream msInput = new MemoryStream(streamData);
-            MemoryStream msOutput = new MemoryStream();
-
-            // It seems to work when skipping the first two bytes.
-            byte header;
-            header = (byte)msInput.ReadByte();
-            header = (byte)msInput.ReadByte();
-
-            DeflateStream zip = new DeflateStream(msInput, CompressionMode.Decompress, true);
-            int cbRead;
-            byte[] abResult = new byte[1024];
-            do
-            {
-                cbRead = zip.Read(abResult, 0, abResult.Length);
-                if (cbRead > 0)
-                {
-                    msOutput.Write(abResult, 0, cbRead);
-                }
-            }
-            while (cbRead > 0);
-            zip.Close();
-            msOutput.Flush();
-            if (msOutput.Length >= 0)
-            {
-                msOutput.Capacity = (int)msOutput.Length;
-                return msOutput.GetBuffer();
-            }
-            return null;
-        }
-
-        private static void ApplyFiltersToStreams(PdfStream stream)
-        {
-            string filter = stream.Dictionary.GetParamAsString("Filter");
             if (filter == "FlateDecode")
             {
-                stream.OriginalData = stream.Data;
-                stream.OriginalFilter = stream.Dictionary.Values["Filter"];
-                byte[] decodedStreamData = DecodeFlateStreamData(stream.Data);
+                byte[] decodedStreamData = PdfFilters.FlateDecode.Decode(stream.Data);
                 stream.Data = decodedStreamData;
-                stream.Dictionary.Values["Length"] = new PdfInteger { Value = decodedStreamData.Length };
-                stream.Dictionary.Values.Remove("Filter");
             }
-            else if(filter == "ASCII85Decode" || filter == "A85")
+            else if (filter == "ASCII85Decode" || filter == "A85")
             {
                 // FIXME: Implement this filter
             }
@@ -92,9 +54,53 @@ namespace VAR.PdfTools
             {
                 // FIXME: Implement this filter
             }
+            else
             {
                 // FIXME: Implement the rest of filters
             }
+        }
+
+        private static void ApplyFiltersToStreams(PdfStream stream)
+        {
+            if (stream.Dictionary.Values.ContainsKey("Filter") == false) { return; }
+            IPdfElement elemFilter = stream.Dictionary.Values["Filter"];
+
+            stream.OriginalData = stream.Data;
+            stream.OriginalFilter = stream.Dictionary.Values["Filter"];
+
+            if (elemFilter is PdfString)
+            {
+                ApplyFilterToStream(stream, ((PdfString)elemFilter).Value);
+            }
+            else if (elemFilter is PdfName)
+            {
+                ApplyFilterToStream(stream, ((PdfName)elemFilter).Value);
+            }
+            else if(elemFilter is PdfArray)
+            {
+                foreach(IPdfElement elemSubFilter in ((PdfArray)elemFilter).Values)
+                {
+                    if (elemSubFilter is PdfString)
+                    {
+                        ApplyFilterToStream(stream, ((PdfString)elemSubFilter).Value);
+                    }
+                    else if (elemSubFilter is PdfName)
+                    {
+                        ApplyFilterToStream(stream, ((PdfName)elemSubFilter).Value);
+                    }
+                    else
+                    {
+                        throw new Exception("PdfFilter not correctly specified");
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception("PdfFilter not correctly specified");
+            }
+
+            stream.Dictionary.Values["Length"] = new PdfInteger { Value = stream.Data.Length };
+            stream.Dictionary.Values.Remove("Filter");
         }
 
         private static IPdfElement ResolveIndirectReferences(IPdfElement elem, Dictionary<int, PdfObject> dictReferences)
@@ -211,7 +217,7 @@ namespace VAR.PdfTools
             do
             {
                 PdfObject obj = parser.ParseObject(doc.Objects);
-                if (obj != null)
+                if (obj != null && obj.Data != null)
                 {
                     if (obj.Data is PdfStream)
                     {
