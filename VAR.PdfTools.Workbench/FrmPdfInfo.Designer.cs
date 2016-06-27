@@ -38,13 +38,15 @@
             this.txtColumnName = new System.Windows.Forms.TextBox();
             this.txtFieldName = new System.Windows.Forms.TextBox();
             this.btnGetField = new System.Windows.Forms.Button();
+            this.txtText = new System.Windows.Forms.TextBox();
+            this.btnHasText = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lblOutputs
             // 
             this.lblOutputs.AutoSize = true;
             this.lblOutputs.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblOutputs.Location = new System.Drawing.Point(12, 130);
+            this.lblOutputs.Location = new System.Drawing.Point(12, 143);
             this.lblOutputs.Name = "lblOutputs";
             this.lblOutputs.Size = new System.Drawing.Size(51, 13);
             this.lblOutputs.TabIndex = 11;
@@ -88,11 +90,11 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOutput.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtOutput.Location = new System.Drawing.Point(15, 146);
+            this.txtOutput.Location = new System.Drawing.Point(15, 159);
             this.txtOutput.Multiline = true;
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtOutput.Size = new System.Drawing.Size(457, 303);
+            this.txtOutput.Size = new System.Drawing.Size(457, 290);
             this.txtOutput.TabIndex = 7;
             // 
             // btnProcess
@@ -140,11 +142,30 @@
             this.btnGetField.UseVisualStyleBackColor = true;
             this.btnGetField.Click += new System.EventHandler(this.btnGetField_Click);
             // 
+            // txtText
+            // 
+            this.txtText.Location = new System.Drawing.Point(15, 111);
+            this.txtText.Name = "txtText";
+            this.txtText.Size = new System.Drawing.Size(142, 20);
+            this.txtText.TabIndex = 17;
+            // 
+            // btnHasText
+            // 
+            this.btnHasText.Location = new System.Drawing.Point(163, 109);
+            this.btnHasText.Name = "btnHasText";
+            this.btnHasText.Size = new System.Drawing.Size(75, 23);
+            this.btnHasText.TabIndex = 16;
+            this.btnHasText.Text = "HasText";
+            this.btnHasText.UseVisualStyleBackColor = true;
+            this.btnHasText.Click += new System.EventHandler(this.btnHasText_Click);
+            // 
             // FrmPdfInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(484, 461);
+            this.Controls.Add(this.txtText);
+            this.Controls.Add(this.btnHasText);
             this.Controls.Add(this.txtFieldName);
             this.Controls.Add(this.btnGetField);
             this.Controls.Add(this.txtColumnName);
@@ -176,5 +197,7 @@
         private System.Windows.Forms.TextBox txtColumnName;
         private System.Windows.Forms.TextBox txtFieldName;
         private System.Windows.Forms.Button btnGetField;
+        private System.Windows.Forms.TextBox txtText;
+        private System.Windows.Forms.Button btnHasText;
     }
 }

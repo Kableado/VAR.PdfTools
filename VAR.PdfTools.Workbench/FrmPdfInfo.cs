@@ -17,6 +17,7 @@ namespace VAR.PdfTools.Workbench
             txtPdfPath.Text = Properties.Settings.Default.LastPdfPath;
             txtColumnName.Text = Properties.Settings.Default.LastColumnName;
             txtFieldName.Text = Properties.Settings.Default.LastFieldName;
+            txtText.Text = Properties.Settings.Default.LastText;
         }
 
         private void FrmPdfInfo_FormClosing(object sender, FormClosingEventArgs e)
@@ -24,6 +25,7 @@ namespace VAR.PdfTools.Workbench
             Properties.Settings.Default.LastPdfPath = txtPdfPath.Text;
             Properties.Settings.Default.LastColumnName = txtColumnName.Text;
             Properties.Settings.Default.LastFieldName = txtFieldName.Text;
+            Properties.Settings.Default.LastText = txtText.Text;
             Properties.Settings.Default.Save();
         }
 
@@ -131,6 +133,26 @@ namespace VAR.PdfTools.Workbench
                 fieldData.Add(extractor.GetField(txtFieldName.Text));
             }
             txtOutput.Lines = fieldData.ToArray();
+        }
+
+        private void btnHasText_Click(object sender, EventArgs e)
+        {
+            if (System.IO.File.Exists(txtPdfPath.Text) == false)
+            {
+                MessageBox.Show("File does not exist");
+                return;
+            }
+
+            PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
+
+            List<string> lines = new List<string>();
+            int pageNum = 1;
+            foreach (PdfDocumentPage page in doc.Pages)
+            {
+                PdfTextExtractor extractor = new PdfTextExtractor(page);
+                lines.Add(string.Format("Page({0}) : {1}", pageNum, Convert.ToString(extractor.HasText(txtText.Text))));
+            }
+            txtOutput.Lines = lines.ToArray();
         }
     }
 }

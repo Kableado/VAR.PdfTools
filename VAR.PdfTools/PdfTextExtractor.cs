@@ -696,6 +696,21 @@ namespace VAR.PdfTools
             return fieldData.OrderBy(elem => elem.GetX()).FirstOrDefault().VisibleText;
         }
 
+        public bool HasText(string text)
+        {
+            return HasText(text, true);
+        }
+
+        public bool HasText(string text, bool fuzzy)
+        {
+            PdfTextElement fieldTitle = FindElementByText(text, fuzzy);
+            if (fieldTitle == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
         #endregion
     }
 }

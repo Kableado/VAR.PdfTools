@@ -8,67 +8,66 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace VAR.PdfTools.Workbench.Properties
-{
-
-
+namespace VAR.PdfTools.Workbench.Properties {
+    
+    
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "14.0.0.0")]
-    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase
-    {
-
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "10.0.0.0")]
+    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
+        
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-
-        public static Settings Default
-        {
-            get
-            {
+        
+        public static Settings Default {
+            get {
                 return defaultInstance;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastPdfPath
-        {
-            get
-            {
+        public string LastPdfPath {
+            get {
                 return ((string)(this["LastPdfPath"]));
             }
-            set
-            {
+            set {
                 this["LastPdfPath"] = value;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastColumnName
-        {
-            get
-            {
+        public string LastColumnName {
+            get {
                 return ((string)(this["LastColumnName"]));
             }
-            set
-            {
+            set {
                 this["LastColumnName"] = value;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastFieldName
-        {
-            get
-            {
+        public string LastFieldName {
+            get {
                 return ((string)(this["LastFieldName"]));
             }
-            set
-            {
+            set {
                 this["LastFieldName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastText {
+            get {
+                return ((string)(this["LastText"]));
+            }
+            set {
+                this["LastText"] = value;
             }
         }
     }
