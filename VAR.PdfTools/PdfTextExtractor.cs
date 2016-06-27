@@ -402,7 +402,7 @@ namespace VAR.PdfTools
             _textLeading = textLeading;
         }
 
-        private void OpTesDisplace(double x, double y)
+        private void OpTextDisplace(double x, double y)
         {
             FlushTextElement();
             var newMatrix = new Matrix3x3();
@@ -413,7 +413,7 @@ namespace VAR.PdfTools
 
         private void OpTextLineFeed()
         {
-            OpTesDisplace(0, -_textLeading);
+            OpTextDisplace(0, -_textLeading);
         }
 
         private void OpSetTextMatrix(double a, double b, double c, double d, double e, double f)
@@ -536,14 +536,14 @@ namespace VAR.PdfTools
                 {
                     double x = PdfElementUtils.GetReal(action.Parameters[0], 0);
                     double y = PdfElementUtils.GetReal(action.Parameters[1], 0);
-                    OpTesDisplace(x, y);
+                    OpTextDisplace(x, y);
                 }
                 else if (action.Token == "TD")
                 {
                     double x = PdfElementUtils.GetReal(action.Parameters[0], 0);
                     double y = PdfElementUtils.GetReal(action.Parameters[1], 0);
                     OpTextLeading(-y);
-                    OpTesDisplace(x, y);
+                    OpTextDisplace(x, y);
                 }
                 else if (action.Token == "Tm")
                 {
