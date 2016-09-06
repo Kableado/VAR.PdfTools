@@ -1021,6 +1021,20 @@ namespace VAR.PdfTools
                     PdfContentAction action = new PdfContentAction(token, elems);
                     elems = new List<IPdfElement>();
                     actions.Add(action);
+                    if (action.Token == "ID")
+                    {
+                        // Embbed inline image
+                        byte lineFeed = 0x0A;
+                        byte carriageReturn = 0x0D;
+                        long distToObject = MeasureToMarkers(new char[][] {
+                                    new char[] {(char)lineFeed, 'E', 'I'},
+                                    new char[] {(char)carriageReturn, (char)lineFeed, 'E', 'I'},
+                                });
+                        byte[] imageBody = GetRawData(distToObject);
+                        SkipEndOfLine();
+                        string endToken = ParseToken();
+                        action.Parameters.Add(new PdfStream { OriginalData = imageBody, });
+                    }
                 }
             } while (IsEndOfStream() == false);
             return actions;

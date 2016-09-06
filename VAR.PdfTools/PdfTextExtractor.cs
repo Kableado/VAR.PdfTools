@@ -470,8 +470,10 @@ namespace VAR.PdfTools
 
         private void ProcessPage()
         {
-            foreach (PdfContentAction action in _page.ContentActions)
+            int unknowCount = 0;
+            for (int i = 0; i < _page.ContentActions.Count; i++)
             {
+                PdfContentAction action = _page.ContentActions[i];
                 // Graphics Operations
                 if (action.Token == "q")
                 {
@@ -577,6 +579,26 @@ namespace VAR.PdfTools
                 else if (action.Token == "TJ")
                 {
                     OpTextPutMultiple(((PdfArray)action.Parameters[0]));
+                }
+                else if (action.Token == "re")
+                {
+                    // FIXME: Interpret this
+                }
+                else if (action.Token == "f")
+                {
+                    // FIXME: Interpret this
+                }
+                else if (action.Token == "g")
+                {
+                    // FIXME: Interpret this
+                }
+                else if (action.Token == "rg")
+                {
+                    // FIXME: Interpret this
+                }
+                else
+                {
+                    unknowCount++;
                 }
             }
             FlushTextElement();
