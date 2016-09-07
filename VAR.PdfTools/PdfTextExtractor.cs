@@ -455,7 +455,8 @@ namespace VAR.PdfTools
                 else if(elem is PdfInteger || elem is PdfReal)
                 {
                     double spacing = PdfElementUtils.GetReal(elem, 0);
-                    _textWidth += spacing; 
+                    // FIXME: Apply correctly spacing
+                    //_textWidth += spacing; 
                 }
                 else if(elem is PdfArray)
                 {
@@ -593,6 +594,30 @@ namespace VAR.PdfTools
                     // FIXME: Interpret this
                 }
                 else if (action.Token == "rg")
+                {
+                    // FIXME: Interpret this
+                }
+                else if (action.Token == "BI")
+                {
+                    // FIXME: Interpret this
+                }
+                else if (action.Token == "ID")
+                {
+                    // FIXME: Interpret this
+                }
+                else if (action.Token == "EI")
+                {
+                    // FIXME: Interpret this
+                }
+                else if (action.Token == "W")
+                {
+                    // FIXME: Interpret this
+                }
+                else if (action.Token == "n")
+                {
+                    // FIXME: Interpret this
+                }
+                else if (action.Token == "Do")
                 {
                     // FIXME: Interpret this
                 }
