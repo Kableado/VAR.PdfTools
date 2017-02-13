@@ -33,6 +33,9 @@ It is a simple Windows.Forms application, to test basic funcitionallity of the l
 ## Building
 A Visual Studio 2015 and 2010 solutions are provided. Simply, click build on the IDE.
 
+A .nuget package can be build using:
+	VAR.PdfTools\Build.NuGet.cmd
+
 ## Contributing
 1. Fork it!
 2. Create your feature branch: `git checkout -b my-new-feature`
@@ -47,7 +50,7 @@ A Visual Studio 2015 and 2010 solutions are provided. Simply, click build on the
 
     The MIT License (MIT)
 
-    Copyright (c) 2014-2015 Valeriano Alfonso Rodriguez
+    Copyright (c) 2016-2017 Valeriano Alfonso Rodriguez
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
