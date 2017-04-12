@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -56,6 +57,11 @@ namespace VAR.PdfTools
             Idenity();
         }
 
+        public Matrix3x3(double a, double b, double c, double d, double e, double f)
+        {
+            Set(a, b, c, d, e, f);
+        }
+
         #endregion
 
         #region Public methods
@@ -71,6 +77,19 @@ namespace VAR.PdfTools
             _matrix[2, 0] = 0.0;
             _matrix[2, 1] = 0.0;
             _matrix[2, 2] = 1.0;
+        }
+
+        public void Set(double a, double b, double c, double d, double e, double f)
+        {
+            _matrix[0, 0] = a;
+            _matrix[1, 0] = b;
+            _matrix[2, 0] = 0;
+            _matrix[0, 1] = c;
+            _matrix[1, 1] = d;
+            _matrix[2, 1] = 0;
+            _matrix[0, 2] = e;
+            _matrix[1, 2] = f;
+            _matrix[2, 2] = 1;
         }
 
         public Vector3D Multiply(Vector3D vect)
@@ -116,6 +135,19 @@ namespace VAR.PdfTools
             newMatrix._matrix[2, 2] = _matrix[2, 2];
 
             return newMatrix;
+        }
+
+        public bool IsCollinear(Matrix3x3 otherMatrix, double horizontalDelta = 0.00001, double verticalDelta = 0.00001)
+        {
+            double epsilon = 0.00001;
+            return (
+                Math.Abs(_matrix[0, 0] - otherMatrix.Matrix[0, 0]) <= epsilon &&
+                Math.Abs(_matrix[1, 0] - otherMatrix.Matrix[1, 0]) <= epsilon &&
+                Math.Abs(_matrix[0, 1] - otherMatrix.Matrix[0, 1]) <= epsilon &&
+                Math.Abs(_matrix[1, 1] - otherMatrix.Matrix[1, 1]) <= epsilon &&
+                Math.Abs(_matrix[0, 2] - otherMatrix.Matrix[0, 2]) <= horizontalDelta &&
+                Math.Abs(_matrix[1, 2] - otherMatrix.Matrix[1, 2]) <= verticalDelta &&
+                true);
         }
 
         #endregion
@@ -367,15 +399,7 @@ namespace VAR.PdfTools
 
         private void OpSetGraphMatrix(double a, double b, double c, double d, double e, double f)
         {
-            _graphicsMatrix.Matrix[0, 0] = a;
-            _graphicsMatrix.Matrix[1, 0] = b;
-            _graphicsMatrix.Matrix[2, 0] = 0;
-            _graphicsMatrix.Matrix[0, 1] = c;
-            _graphicsMatrix.Matrix[1, 1] = d;
-            _graphicsMatrix.Matrix[2, 1] = 0;
-            _graphicsMatrix.Matrix[0, 2] = e;
-            _graphicsMatrix.Matrix[1, 2] = f;
-            _graphicsMatrix.Matrix[2, 2] = 1;
+            _graphicsMatrix.Set(a, b, c, d, e, f);
         }
 
         private void OpBeginText()
@@ -418,16 +442,35 @@ namespace VAR.PdfTools
 
         private void OpSetTextMatrix(double a, double b, double c, double d, double e, double f)
         {
+            double halfSpaceWidth = 0;
+            double horizontalDelta = 0;
+            Matrix3x3 newMatrix = new Matrix3x3(a, b, c, d, e, f);
+
+            if (_font != null)
+            {
+                halfSpaceWidth = _font.GetCharWidth(' ') * _fontSize;
+            }
+            horizontalDelta = (_textWidth + halfSpaceWidth);
+            if (_textMatrix.IsCollinear(newMatrix, horizontalDelta: horizontalDelta))
+            {
+                return;
+            }
+            if (_currentTextElement != null)
+            {
+                if (_currentTextElement.Font != null)
+                {
+                    halfSpaceWidth = _currentTextElement.Font.GetCharWidth(' ') * _currentTextElement.FontSize;
+                }
+                horizontalDelta = (_currentTextElement.VisibleWidth + halfSpaceWidth);
+                if (_currentTextElement.Matrix.IsCollinear(newMatrix, horizontalDelta: horizontalDelta))
+                {
+                    FlushTextElementSoft();
+                    _textMatrix = newMatrix;
+                    return;
+                }
+            }
             FlushTextElement();
-            _textMatrix.Matrix[0, 0] = a;
-            _textMatrix.Matrix[1, 0] = b;
-            _textMatrix.Matrix[2, 0] = 0;
-            _textMatrix.Matrix[0, 1] = c;
-            _textMatrix.Matrix[1, 1] = d;
-            _textMatrix.Matrix[2, 1] = 0;
-            _textMatrix.Matrix[0, 2] = e;
-            _textMatrix.Matrix[1, 2] = f;
-            _textMatrix.Matrix[2, 2] = 1;
+            _textMatrix = newMatrix;
         }
         
         private void OpTextPut(string text)
