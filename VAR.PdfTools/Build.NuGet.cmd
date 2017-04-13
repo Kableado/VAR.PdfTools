@@ -1,8 +1,9 @@
 @echo off
 
 :: MSBuild and tools path
-if exist "%ProgramFiles%\MSBuild\14.0\bin" set PATH=%ProgramFiles%\MSBuild\14.0\bin;%PATH%
-if exist "%ProgramFiles(x86)%\MSBuild\14.0\bin" set PATH=%ProgramFiles(x86)%\MSBuild\14.0\bin;%PATH%
+if exist "%windir%\Microsoft.Net\Framework\v4.0.30319" set MsBuildPath=%windir%\Microsoft.NET\Framework\v4.0.30319
+if exist "%windir%\Microsoft.Net\Framework64\v4.0.30319" set MsBuildPath=%windir%\Microsoft.NET\Framework64\v4.0.30319
+set PATH=%MsBuildPath%;%PATH%
 
 :: NuGet
 set nuget="nuget"
@@ -18,7 +19,7 @@ msbuild VAR.PdfTools.csproj /t:Build /p:Configuration="Release .Net 4.6.1" /p:Pl
 
 :: Packing Nuget
 Title Packing Nuget
-%nuget% pack VAR.PdfTools.csproj -Verbosity detailed -OutputDir "NuGet" -MSBuildVersion "14.0" -Properties Configuration="Release .Net 4.6.1" -Prop Platform=AnyCPU
+%nuget% pack VAR.PdfTools.csproj -Verbosity detailed -OutputDir "NuGet" -Properties Configuration="Release .Net 4.6.1" -Prop Platform=AnyCPU
 
 title Finished
 pause
