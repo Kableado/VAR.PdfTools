@@ -54,6 +54,10 @@ namespace VAR.PdfTools
 
         private void PrepareSizes(PdfDictionary baseData)
         {
+            // Set "Times-Roman" as default basefont sizes
+            _widths = PdfStandar14FontMetrics.Times_Roman.Widths;
+            _height = PdfStandar14FontMetrics.Times_Roman.ApproxHeight;
+
             if (baseData.Values.ContainsKey("ToUnicode"))
             {
                 byte[] toUnicodeStream = ((PdfStream)baseData.Values["ToUnicode"]).Data;
