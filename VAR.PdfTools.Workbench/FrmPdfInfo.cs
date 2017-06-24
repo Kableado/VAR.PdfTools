@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -154,5 +157,109 @@ namespace VAR.PdfTools.Workbench
             }
             txtOutput.Lines = lines.ToArray();
         }
+
+        private void btnRender_Click(object sender, EventArgs e)
+        {
+            if (File.Exists(txtPdfPath.Text) == false)
+            {
+                MessageBox.Show("File does not exist");
+                return;
+            }
+
+            const int Scale = 10;
+
+            PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
+            string baseDocumentPath = Path.GetDirectoryName(txtPdfPath.Text);
+            string baseDocumentFilename = Path.GetFileNameWithoutExtension(txtPdfPath.Text);
+
+            List<string> lines = new List<string>();
+            lines.Add(string.Format("Filename : {0}", baseDocumentFilename));
+            lines.Add(string.Format("Number of Pages : {0}", doc.Pages.Count));
+
+            int pageNumber = 1;
+            foreach (PdfDocumentPage page in doc.Pages)
+            {
+                double pageXMin = double.MaxValue;
+                double pageYMin = double.MaxValue;
+                double pageXMax = double.MinValue;
+                double pageYMax = double.MinValue;
+
+                // Preprocess page to get max size
+                PdfTextExtractor extractor = new PdfTextExtractor(page);
+                foreach (PdfTextElement textElement in extractor.Elements)
+                {
+                    double textElementXMin = textElement.GetX();
+                    double textElementYMax = textElement.GetY();
+                    double textElementXMax = textElementXMin + textElement.VisibleWidth;
+                    double textElementYMin = textElementYMax - textElement.VisibleHeight;
+
+                    if (textElementXMax > pageXMax) { pageXMax = textElementXMax; }
+                    if (textElementYMax > pageYMax) { pageYMax = textElementYMax; }
+                    if (textElementXMin < pageXMin) { pageXMin = textElementXMin; }
+                    if (textElementYMin < pageYMin) { pageYMin = textElementYMin; }
+                }
+                lines.Add(string.Format("Page {0:0000} TextElements : {1}", pageNumber, extractor.Elements.Count));
+
+                // Prepare page image
+                int pageWidth = (int)Math.Ceiling(pageXMax - pageXMin);
+                int pageHeight = (int)Math.Ceiling(pageYMax - pageYMin);
+                Bitmap bmp = CreatePageBitmap(pageWidth, pageHeight, Scale);
+                Graphics gc = Graphics.FromImage(bmp);
+                gc.Clear(Color.White);
+                Pen penTextElem = new Pen(Color.Blue);
+                Pen penTextElem2 = new Pen(Color.Red);
+                
+                // Draw text elements
+                foreach (PdfTextElement textElement in extractor.Elements)
+                {
+                    DrawTextElement(textElement, gc, penTextElem, penTextElem2, Scale, pageHeight, pageXMin, pageYMin);
+                }
+
+                // Save image to disk
+                string fileName = Path.Combine(baseDocumentPath, string.Format("{0}_{1:0000}.png", baseDocumentFilename, pageNumber));
+                bmp.Save(fileName, ImageFormat.Png);
+
+                pageNumber++;
+            }
+
+            txtOutput.Lines = lines.ToArray();
+        }
+
+        private static Bitmap CreatePageBitmap(int pageWidth, int pageHeight, int Scale)
+        {
+            return new Bitmap(
+                        pageWidth * Scale,
+                        pageHeight * Scale,
+                        PixelFormat.Format32bppArgb);
+        }
+
+        private static void DrawTextElement(PdfTextElement textElement, Graphics gc, Pen penTextElem, Pen penTextElem2, int Scale, int pageHeight, double pageXMin, double pageYMin)
+        {
+            double textElementX = textElement.GetX() - pageXMin;
+            double textElementY = textElement.GetY() - pageYMin;
+            double textElementWidth = textElement.VisibleWidth;
+            double textElementHeight = textElement.VisibleHeight;
+            string textElementText = textElement.VisibleText;
+            string textElementFontName = (textElement.Font == null ? string.Empty : textElement.Font.Name);
+
+            double textElementPageX = textElementX;
+            double textElementPageY = pageHeight - textElementY;
+            gc.DrawRectangle(penTextElem,
+                (int)(textElementPageX * Scale),
+                (int)(textElementPageY * Scale),
+                (int)(textElementWidth * Scale),
+                (int)(textElementHeight * Scale));
+            gc.DrawRectangle(penTextElem2,
+                (int)((textElementPageX - 1) * Scale),
+                (int)((textElementPageY - 1) * Scale),
+                (int)((textElementWidth + 2) * Scale),
+                (int)((textElementHeight + 2) * Scale));
+            gc.DrawString(textElementText,
+                new Font("Tahoma", (int)textElementHeight * Scale, GraphicsUnit.Pixel),
+                Brushes.Black,
+                (int)(textElementPageX * Scale),
+                (int)(textElementPageY * Scale));
+        }
+
     }
 }

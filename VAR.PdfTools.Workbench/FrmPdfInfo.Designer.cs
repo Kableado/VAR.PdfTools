@@ -40,6 +40,7 @@
             this.btnGetField = new System.Windows.Forms.Button();
             this.txtText = new System.Windows.Forms.TextBox();
             this.btnHasText = new System.Windows.Forms.Button();
+            this.btnRender = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lblOutputs
@@ -159,11 +160,23 @@
             this.btnHasText.UseVisualStyleBackColor = true;
             this.btnHasText.Click += new System.EventHandler(this.btnHasText_Click);
             // 
+            // btnRender
+            // 
+            this.btnRender.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRender.Location = new System.Drawing.Point(397, 52);
+            this.btnRender.Name = "btnRender";
+            this.btnRender.Size = new System.Drawing.Size(75, 23);
+            this.btnRender.TabIndex = 18;
+            this.btnRender.Text = "Render";
+            this.btnRender.UseVisualStyleBackColor = true;
+            this.btnRender.Click += new System.EventHandler(this.btnRender_Click);
+            // 
             // FrmPdfInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(484, 461);
+            this.Controls.Add(this.btnRender);
             this.Controls.Add(this.txtText);
             this.Controls.Add(this.btnHasText);
             this.Controls.Add(this.txtFieldName);
@@ -199,5 +212,6 @@
         private System.Windows.Forms.Button btnGetField;
         private System.Windows.Forms.TextBox txtText;
         private System.Windows.Forms.Button btnHasText;
+        private System.Windows.Forms.Button btnRender;
     }
 }
