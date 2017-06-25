@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -41,7 +42,7 @@ namespace VAR.PdfTools.Workbench
                 txtPdfPath.Text = dlgFile.FileName;
             }
         }
-        
+
         private void btnProcess_Click(object sender, EventArgs e)
         {
             if (System.IO.File.Exists(txtPdfPath.Text) == false)
@@ -92,7 +93,7 @@ namespace VAR.PdfTools.Workbench
                 {
                     lines.Add(string.Format("Text({0}, {1})({2}, {3})[{4}]: \"{5}\"",
                         textElement.Matrix.Matrix[0, 2], textElement.Matrix.Matrix[1, 2], textElement.VisibleWidth, textElement.VisibleHeight,
-                        textElement.Font == null ? string.Empty : textElement.Font.Name,
+                        textElement.Font == null ? "#NULL#" : textElement.Font.Name,
                         textElement.VisibleText));
                 }
             }
@@ -109,7 +110,7 @@ namespace VAR.PdfTools.Workbench
             }
 
             PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
-            
+
             var columnData = new List<string>();
             foreach (PdfDocumentPage page in doc.Pages)
             {
@@ -128,7 +129,7 @@ namespace VAR.PdfTools.Workbench
             }
 
             PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
-            
+
             var fieldData = new List<string>();
             foreach (PdfDocumentPage page in doc.Pages)
             {
@@ -166,7 +167,7 @@ namespace VAR.PdfTools.Workbench
                 return;
             }
 
-            const int Scale = 10;
+            const int Scale = 5;
 
             PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
             string baseDocumentPath = Path.GetDirectoryName(txtPdfPath.Text);
@@ -203,37 +204,29 @@ namespace VAR.PdfTools.Workbench
                 // Prepare page image
                 int pageWidth = (int)Math.Ceiling(pageXMax - pageXMin);
                 int pageHeight = (int)Math.Ceiling(pageYMax - pageYMin);
-                Bitmap bmp = CreatePageBitmap(pageWidth, pageHeight, Scale);
-                Graphics gc = Graphics.FromImage(bmp);
-                gc.Clear(Color.White);
-                Pen penTextElem = new Pen(Color.Blue);
-                Pen penTextElem2 = new Pen(Color.Red);
-                
-                // Draw text elements
-                foreach (PdfTextElement textElement in extractor.Elements)
+                using (Bitmap bmp = new Bitmap(pageWidth * Scale, pageHeight * Scale, PixelFormat.Format32bppArgb))
+                using (Graphics gc = Graphics.FromImage(bmp))
+                using (Pen penTextElem = new Pen(Color.Blue))
                 {
-                    DrawTextElement(textElement, gc, penTextElem, penTextElem2, Scale, pageHeight, pageXMin, pageYMin);
+                    gc.Clear(Color.White);
+
+                    // Draw text elements
+                    foreach (PdfTextElement textElement in extractor.Elements)
+                    {
+                        DrawTextElement(textElement, gc, penTextElem, Scale, pageHeight, pageXMin, pageYMin);
+                    }
+
+                    // Save image to disk
+                    string fileName = Path.Combine(baseDocumentPath, string.Format("{0}_{1:0000}.png", baseDocumentFilename, pageNumber));
+                    bmp.Save(fileName, ImageFormat.Png);
                 }
-
-                // Save image to disk
-                string fileName = Path.Combine(baseDocumentPath, string.Format("{0}_{1:0000}.png", baseDocumentFilename, pageNumber));
-                bmp.Save(fileName, ImageFormat.Png);
-
                 pageNumber++;
             }
 
             txtOutput.Lines = lines.ToArray();
         }
-
-        private static Bitmap CreatePageBitmap(int pageWidth, int pageHeight, int Scale)
-        {
-            return new Bitmap(
-                        pageWidth * Scale,
-                        pageHeight * Scale,
-                        PixelFormat.Format32bppArgb);
-        }
-
-        private static void DrawTextElement(PdfTextElement textElement, Graphics gc, Pen penTextElem, Pen penTextElem2, int Scale, int pageHeight, double pageXMin, double pageYMin)
+        
+        private static void DrawTextElement(PdfTextElement textElement, Graphics gc, Pen penTextElem, int Scale, int pageHeight, double pageXMin, double pageYMin)
         {
             double textElementX = textElement.GetX() - pageXMin;
             double textElementY = textElement.GetY() - pageYMin;
@@ -244,22 +237,72 @@ namespace VAR.PdfTools.Workbench
 
             double textElementPageX = textElementX;
             double textElementPageY = pageHeight - textElementY;
-            gc.DrawRectangle(penTextElem,
+            
+            DrawRoundedRectangle(gc, penTextElem,
                 (int)(textElementPageX * Scale),
                 (int)(textElementPageY * Scale),
                 (int)(textElementWidth * Scale),
-                (int)(textElementHeight * Scale));
-            gc.DrawRectangle(penTextElem2,
-                (int)((textElementPageX - 1) * Scale),
-                (int)((textElementPageY - 1) * Scale),
-                (int)((textElementWidth + 2) * Scale),
-                (int)((textElementHeight + 2) * Scale));
-            gc.DrawString(textElementText,
-                new Font("Tahoma", (int)textElementHeight * Scale, GraphicsUnit.Pixel),
-                Brushes.Black,
-                (int)(textElementPageX * Scale),
-                (int)(textElementPageY * Scale));
+                (int)(textElementHeight * Scale),
+                Scale);
+
+            if (textElementHeight > 0.000)
+            {
+                using (Font font = new Font("Arial", (int)(textElementHeight * Scale), GraphicsUnit.Pixel))
+                {
+                    foreach (PdfCharElement c in textElement.Characters)
+                    {
+                        gc.DrawString(c.Char,
+                            font,
+                            Brushes.Black,
+                            (int)((textElementPageX + c.Displacement) * Scale),
+                            (int)(textElementPageY * Scale));
+                        gc.FillRectangle(Brushes.Red,
+                            (int)((textElementPageX + c.Displacement) * Scale),
+                            (int)(textElementPageY * Scale),
+                            2, 2);
+                    }
+                }
+            }
+        }
+        
+        public static GraphicsPath RoundedRect(int x, int y, int width, int height, int radius)
+        {
+            int diameter = radius * 2;
+            Size size = new Size(diameter, diameter);
+            Rectangle arc = new Rectangle(x, y, diameter, diameter);
+            GraphicsPath path = new GraphicsPath();
+            
+            // top left arc 
+            path.AddArc(arc, 180, 90);
+
+            // top right arc  
+            arc.X = (x + width) - diameter;
+            path.AddArc(arc, 270, 90);
+
+            // bottom right arc  
+            arc.Y = (y + height) - diameter;
+            path.AddArc(arc, 0, 90);
+
+            // bottom left arc 
+            arc.X = x;
+            path.AddArc(arc, 90, 90);
+
+            path.CloseFigure();
+            return path;
         }
 
+        public static void DrawRoundedRectangle(Graphics graphics, Pen pen, int x, int y, int width, int height, int cornerRadius)
+        {
+            if (graphics == null)
+                throw new ArgumentNullException("graphics");
+            if (pen == null)
+                throw new ArgumentNullException("pen");
+
+            using (GraphicsPath path = RoundedRect(x, y, width, height, cornerRadius))
+            {
+                graphics.DrawPath(pen, path);
+            }
+        }
+        
     }
 }
