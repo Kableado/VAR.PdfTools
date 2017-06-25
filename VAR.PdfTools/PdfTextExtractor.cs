@@ -25,7 +25,7 @@ namespace VAR.PdfTools
         {
             Init();
         }
-        
+
         public void Init()
         {
             _vector[0] = 0.0;
@@ -35,7 +35,7 @@ namespace VAR.PdfTools
 
         #endregion
     }
-    
+
     public class Matrix3x3
     {
         #region Declarations
@@ -116,7 +116,7 @@ namespace VAR.PdfTools
             newMatrix._matrix[2, 0] = (_matrix[0, 0] * matrix._matrix[2, 0]) + (_matrix[1, 0] * matrix._matrix[2, 1]) + (_matrix[2, 0] * matrix._matrix[2, 2]);
             newMatrix._matrix[2, 1] = (_matrix[0, 1] * matrix._matrix[2, 0]) + (_matrix[1, 1] * matrix._matrix[2, 1]) + (_matrix[2, 1] * matrix._matrix[2, 2]);
             newMatrix._matrix[2, 2] = (_matrix[0, 2] * matrix._matrix[2, 0]) + (_matrix[1, 2] * matrix._matrix[2, 1]) + (_matrix[2, 2] * matrix._matrix[2, 2]);
-            
+
             return newMatrix;
         }
 
@@ -153,6 +153,12 @@ namespace VAR.PdfTools
         #endregion
     }
 
+    public struct PdfCharElement
+    {
+        public string Char;
+        public double Displacement;
+    }
+
     public class PdfTextElement
     {
         #region Properties
@@ -170,6 +176,8 @@ namespace VAR.PdfTools
         public double VisibleWidth { get; set; }
 
         public double VisibleHeight { get; set; }
+
+        public List<PdfCharElement> Characters { get; set; }
 
         private List<PdfTextElement> _childs = new List<PdfTextElement>();
         public List<PdfTextElement> Childs { get { return _childs; } }
@@ -206,15 +214,17 @@ namespace VAR.PdfTools
         // Text state
         private PdfFont _font = null;
         private double _fontSize = 1;
+        private double _charSpacing = 0;
+        private double _wordSpacing = 0;
         private double _textLeading = 0;
 
         // Text object state
         private bool inText = false;
         private Matrix3x3 _textMatrix = new Matrix3x3();
+        private Matrix3x3 _textMatrixCurrent = new Matrix3x3();
         private StringBuilder _sbText = new StringBuilder();
         private double _textWidth = 0;
-
-        PdfTextElement _currentTextElement = null;
+        private List<PdfCharElement> _listCharacters = new List<PdfCharElement>();
 
         #endregion
 
@@ -258,40 +268,21 @@ namespace VAR.PdfTools
             PdfTextElement textElem = new PdfTextElement();
             textElem.Font = _font;
             textElem.FontSize = _fontSize;
-            textElem.Matrix = _textMatrix.Multiply(_graphicsMatrix);
+            textElem.Matrix = _textMatrixCurrent.Multiply(_graphicsMatrix);
             textElem.RawText = _sbText.ToString();
             textElem.VisibleText = PdfString_ToUnicode(textElem.RawText, _font);
             textElem.VisibleWidth = _textWidth * textElem.Matrix.Matrix[0, 0];
             textElem.VisibleHeight = (_font.Height * _fontSize) * textElem.Matrix.Matrix[1, 1];
+            textElem.Characters = new List<PdfCharElement>();
+            foreach (PdfCharElement c in _listCharacters)
+            {
+                textElem.Characters.Add(new PdfCharElement
+                {
+                    Char = c.Char,
+                    Displacement = (c.Displacement * textElem.Matrix.Matrix[0, 0]),
+                });
+            }
             return textElem;
-        }
-
-        private void FlushTextElementSoft()
-        {
-            if (_sbText.Length == 0)
-            {
-                return;
-            }
-
-            PdfTextElement textElem = BuildTextElement();
-            if (_currentTextElement == null)
-            {
-                _currentTextElement = new PdfTextElement();
-                _currentTextElement.Font = null;
-                _currentTextElement.FontSize = -1;
-                _currentTextElement.Matrix = textElem.Matrix.Copy();
-                _currentTextElement.RawText = string.Empty;
-                _currentTextElement.VisibleText = string.Empty;
-                _currentTextElement.VisibleWidth = 0;
-                _currentTextElement.VisibleHeight = 0;
-            }
-            _currentTextElement.VisibleText += textElem.VisibleText;
-            _currentTextElement.VisibleWidth += textElem.VisibleWidth;
-            _currentTextElement.VisibleHeight = System.Math.Max(_currentTextElement.VisibleHeight, textElem.VisibleHeight);
-            _currentTextElement.Childs.Add(textElem);
-
-            _sbText = new StringBuilder();
-            _textWidth = 0;
         }
 
         private void AddTextElement(PdfTextElement textElement)
@@ -307,27 +298,16 @@ namespace VAR.PdfTools
         {
             if (_sbText.Length == 0)
             {
-                if (_currentTextElement != null)
-                {
-                    AddTextElement(_currentTextElement);
-                    _currentTextElement = null;
-                }
+                _textWidth = 0;
                 return;
             }
+            PdfTextElement textElem = BuildTextElement();
+            AddTextElement(textElem);
 
-            if (_currentTextElement != null)
-            {
-                FlushTextElementSoft();
-                AddTextElement(_currentTextElement);
-                _currentTextElement = null;
-            }
-            else
-            {
-                PdfTextElement textElem = BuildTextElement();
-                AddTextElement(textElem);
-            }
+            _textMatrixCurrent.Matrix[0, 2] += _textWidth;
 
             _sbText = new StringBuilder();
+            _listCharacters.Clear();
             _textWidth = 0;
         }
 
@@ -336,9 +316,9 @@ namespace VAR.PdfTools
             StringBuilder sbResult = new StringBuilder();
             foreach (char c in text)
             {
-                if (c == '.' || c == ',' || 
-                    c == ':' || c == ';' || 
-                    c == '-' || c == '_' || 
+                if (c == '.' || c == ',' ||
+                    c == ':' || c == ';' ||
+                    c == '-' || c == '_' ||
                     c == ' ' || c == '\t')
                 {
                     continue;
@@ -406,34 +386,47 @@ namespace VAR.PdfTools
             _graphicsMatrixStack.Add(_graphicsMatrix.Copy());
         }
 
+        private void OpSetGraphMatrix(double a, double b, double c, double d, double e, double f)
+        {
+            _graphicsMatrix.Set(a, b, c, d, e, f);
+        }
+
         private void OpPopGraphState()
         {
             _graphicsMatrix = _graphicsMatrixStack[_graphicsMatrixStack.Count - 1];
             _graphicsMatrixStack.RemoveAt(_graphicsMatrixStack.Count - 1);
         }
 
-        private void OpSetGraphMatrix(double a, double b, double c, double d, double e, double f)
-        {
-            _graphicsMatrix.Set(a, b, c, d, e, f);
-        }
 
         private void OpBeginText()
         {
             _textMatrix.Idenity();
+            _textMatrixCurrent.Idenity();
             inText = true;
         }
 
         private void OpEndText()
         {
-            FlushTextElementSoft();
+            FlushTextElement();
             inText = false;
         }
 
         private void OpTextFont(string fontName, double size)
         {
-            FlushTextElementSoft();
+            FlushTextElement();
             _font = _page.Fonts[fontName];
             _fontSize = size;
+        }
+
+
+        private void OpTextCharSpacing(double charSpacing)
+        {
+            _charSpacing = charSpacing;
+        }
+
+        private void OpTextWordSpacing(double wordSpacing)
+        {
+            _wordSpacing = wordSpacing;
         }
 
         private void OpTextLeading(double textLeading)
@@ -448,6 +441,7 @@ namespace VAR.PdfTools
             newMatrix.Matrix[0, 2] = x;
             newMatrix.Matrix[1, 2] = y;
             _textMatrix = newMatrix.Multiply(_textMatrix);
+            _textMatrixCurrent = _textMatrix.Copy();
         }
 
         private void OpTextLineFeed()
@@ -457,37 +451,12 @@ namespace VAR.PdfTools
 
         private void OpSetTextMatrix(double a, double b, double c, double d, double e, double f)
         {
-            double halfSpaceWidth = 0;
-            double horizontalDelta = 0;
             Matrix3x3 newMatrix = new Matrix3x3(a, b, c, d, e, f);
-
-            if (_font != null)
-            {
-                halfSpaceWidth = _font.GetCharWidth(' ') * _fontSize;
-            }
-            horizontalDelta = (_textWidth + halfSpaceWidth);
-            if (_textMatrix.IsCollinear(newMatrix, horizontalDelta: horizontalDelta))
-            {
-                return;
-            }
-            if (_currentTextElement != null)
-            {
-                if (_currentTextElement.Font != null)
-                {
-                    halfSpaceWidth = _currentTextElement.Font.GetCharWidth(' ') * _currentTextElement.FontSize;
-                }
-                horizontalDelta = (_currentTextElement.VisibleWidth + halfSpaceWidth);
-                if (_currentTextElement.Matrix.IsCollinear(newMatrix, horizontalDelta: horizontalDelta))
-                {
-                    FlushTextElementSoft();
-                    _textMatrix = newMatrix;
-                    return;
-                }
-            }
             FlushTextElement();
             _textMatrix = newMatrix;
+            _textMatrixCurrent = _textMatrix.Copy();
         }
-        
+
         private void OpTextPut(string text)
         {
             if (inText == false) { return; }
@@ -496,13 +465,13 @@ namespace VAR.PdfTools
             {
                 foreach (char c in text)
                 {
+                    string realChar = _font.ToUnicode(c);
+                    if (realChar == "\0") { continue; }
+                    _listCharacters.Add(new PdfCharElement { Char = _font.ToUnicode(c), Displacement = _textWidth, });
                     double charWidth = _font.GetCharWidth(c) * _fontSize;
                     _textWidth += charWidth;
+                    _textWidth += ((c == 0x20) ? _wordSpacing : _charSpacing);
                 }
-            }
-            else
-            {
-                _textWidth += text.Length * _fontSize * 0.5;
             }
         }
 
@@ -511,17 +480,16 @@ namespace VAR.PdfTools
             if (inText == false) { return; }
             foreach (IPdfElement elem in array.Values)
             {
-                if(elem is PdfString)
+                if (elem is PdfString)
                 {
                     OpTextPut(((PdfString)elem).Value);
                 }
-                else if(elem is PdfInteger || elem is PdfReal)
+                else if (elem is PdfInteger || elem is PdfReal)
                 {
-                    // FIXME: Apply correctly spacing
-                    //double spacing = PdfElementUtils.GetReal(elem, 0);
-                    //_textWidth += spacing; 
+                    double spacing = PdfElementUtils.GetReal(elem, 0);
+                    _textWidth -= (spacing / 1000) * _fontSize;
                 }
-                else if(elem is PdfArray)
+                else if (elem is PdfArray)
                 {
                     OpTextPutMultiple(((PdfArray)elem));
                 }
@@ -538,7 +506,8 @@ namespace VAR.PdfTools
             for (int i = 0; i < _page.ContentActions.Count; i++)
             {
                 PdfContentAction action = _page.ContentActions[i];
-                // Graphics Operations
+
+                // Special graphics state
                 if (action.Token == "q")
                 {
                     OpPushGraphState();
@@ -569,11 +538,13 @@ namespace VAR.PdfTools
                 }
                 else if (action.Token == "Tc")
                 {
-                    // FIXME: Char spacing
+                    double charSpacing = PdfElementUtils.GetReal(action.Parameters[0], 0);
+                    OpTextCharSpacing(charSpacing);
                 }
                 else if (action.Token == "Tw")
                 {
-                    // FIXME: Word spacing
+                    double wordSpacing = PdfElementUtils.GetReal(action.Parameters[0], 0);
+                    OpTextWordSpacing(wordSpacing);
                 }
                 else if (action.Token == "Tz")
                 {
@@ -581,7 +552,7 @@ namespace VAR.PdfTools
                 }
                 else if (action.Token == "Tf")
                 {
-                    string fontName = ((PdfName)action.Parameters[0]).Value;
+                    string fontName = PdfElementUtils.GetString(action.Parameters[0], string.Empty);
                     double fontSize = PdfElementUtils.GetReal(action.Parameters[1], 0);
                     OpTextFont(fontName, fontSize);
                 }
@@ -627,18 +598,23 @@ namespace VAR.PdfTools
                 }
                 else if (action.Token == "Tj")
                 {
-                    OpTextPut(((PdfString)action.Parameters[0]).Value);
+                    string text = PdfElementUtils.GetString(action.Parameters[0], string.Empty);
+                    OpTextPut(text);
                 }
                 else if (action.Token == "'")
                 {
+                    string text = PdfElementUtils.GetString(action.Parameters[0], string.Empty);
                     OpTextLineFeed();
-                    OpTextPut(((PdfString)action.Parameters[0]).Value);
+                    OpTextPut(text);
                 }
                 else if (action.Token == "\"")
                 {
                     double wordSpacing = PdfElementUtils.GetReal(action.Parameters[0], 0);
                     double charSpacing = PdfElementUtils.GetReal(action.Parameters[1], 0);
-                    OpTextPut(((PdfString)action.Parameters[2]).Value);
+                    string text = PdfElementUtils.GetString(action.Parameters[0], string.Empty);
+                    OpTextCharSpacing(charSpacing);
+                    OpTextWordSpacing(wordSpacing);
+                    OpTextPut(text);
                 }
                 else if (action.Token == "TJ")
                 {
@@ -704,7 +680,7 @@ namespace VAR.PdfTools
         public List<string> GetColumn(string column, bool fuzzy)
         {
             PdfTextElement columnHead = FindElementByText(column, fuzzy);
-            if(columnHead == null)
+            if (columnHead == null)
             {
                 return new List<string>();
             }
@@ -717,7 +693,7 @@ namespace VAR.PdfTools
             double extentX2 = double.MaxValue;
             foreach (PdfTextElement elem in _textElements)
             {
-                if(elem == columnHead){continue;}
+                if (elem == columnHead) { continue; }
                 if (TextElementHorizontalIntersection(columnHead, elem) == false) { continue; }
                 double elemX1 = elem.GetX();
                 double elemX2 = elemX1 + elem.VisibleWidth;
@@ -798,7 +774,7 @@ namespace VAR.PdfTools
                 fieldData.Add(elem);
             }
 
-            if(fieldData.Count == 0)
+            if (fieldData.Count == 0)
             {
                 return null;
             }
