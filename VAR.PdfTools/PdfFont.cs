@@ -201,15 +201,23 @@ namespace VAR.PdfTools
 
         public double GetCharWidth(char character)
         {
+            double charWidth = 0;
             if (_widths == null)
             {
-                return 0;
+                return charWidth;
             }
             if (_widths.ContainsKey(character))
             {
-                return _widths[character];
+                charWidth = _widths[character];
             }
-            return 0;
+
+            // NOTE: Convert "Zero" to default width of 0.5
+            if (charWidth <= 0.0001)
+            {
+                charWidth = 0.5;
+            }
+
+            return charWidth;
         }
 
         #endregion
