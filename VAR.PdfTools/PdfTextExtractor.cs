@@ -231,7 +231,7 @@ namespace VAR.PdfTools
         public PdfTextExtractor(PdfDocumentPage page)
         {
             _page = page;
-            ProcessPage();
+            ProcessPageContent();
         }
 
         #endregion
@@ -481,8 +481,13 @@ namespace VAR.PdfTools
             {
                 foreach (char c in text)
                 {
-                    _textWidth += _font.GetCharWidth(c) * _fontSize;
+                    double charWidth = _font.GetCharWidth(c) * _fontSize;
+                    _textWidth += charWidth;
                 }
+            }
+            else
+            {
+                _textWidth += text.Length * _fontSize * 0.5;
             }
         }
 
@@ -497,8 +502,8 @@ namespace VAR.PdfTools
                 }
                 else if(elem is PdfInteger || elem is PdfReal)
                 {
-                    double spacing = PdfElementUtils.GetReal(elem, 0);
                     // FIXME: Apply correctly spacing
+                    //double spacing = PdfElementUtils.GetReal(elem, 0);
                     //_textWidth += spacing; 
                 }
                 else if(elem is PdfArray)
@@ -512,7 +517,7 @@ namespace VAR.PdfTools
 
         #region Private methods
 
-        private void ProcessPage()
+        private void ProcessPageContent()
         {
             int unknowCount = 0;
             for (int i = 0; i < _page.ContentActions.Count; i++)

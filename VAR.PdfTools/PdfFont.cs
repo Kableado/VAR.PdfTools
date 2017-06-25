@@ -89,13 +89,15 @@ namespace VAR.PdfTools
             {
                 if (elem is PdfReal widthReal)
                 {
-                    _widths.Add(actualChar, widthReal.Value / glyphSpaceToTextSpace);
+                    double charWidth = widthReal.Value / glyphSpaceToTextSpace;
+                    _widths.Add(actualChar, charWidth);
                     actualChar++;
                     continue;
                 }
                 if (elem is PdfInteger widthInt)
                 {
-                    _widths.Add(actualChar, widthInt.Value / glyphSpaceToTextSpace);
+                    double charWidth = widthInt.Value / glyphSpaceToTextSpace;
+                    _widths.Add(actualChar, charWidth);
                     actualChar++;
                     continue;
                 }
