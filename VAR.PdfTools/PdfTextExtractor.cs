@@ -362,6 +362,21 @@ namespace VAR.PdfTools
             return null;
         }
 
+        private List<PdfTextElement> FindElementsContainingText(string text, bool fuzzy)
+        {
+            List<PdfTextElement> list = new List<PdfTextElement>();
+            string matchingText = fuzzy ? SimplifyText(text) : text;
+            foreach (PdfTextElement elem in _textElements)
+            {
+                string elemText = fuzzy ? SimplifyText(elem.VisibleText) : elem.VisibleText;
+                if (elemText.Contains(matchingText))
+                {
+                    list.Add(elem);
+                }
+            }
+            return list;
+        }
+
         private bool TextElementVerticalIntersection(PdfTextElement elem1, PdfTextElement elem2)
         {
             double elem1X1 = elem1.GetX();
@@ -798,12 +813,8 @@ namespace VAR.PdfTools
 
         public bool HasText(string text, bool fuzzy)
         {
-            PdfTextElement fieldTitle = FindElementByText(text, fuzzy);
-            if (fieldTitle == null)
-            {
-                return false;
-            }
-            return true;
+            List<PdfTextElement> list = FindElementsContainingText(text, fuzzy);
+            return (list.Count > 0);
         }
 
         #endregion
