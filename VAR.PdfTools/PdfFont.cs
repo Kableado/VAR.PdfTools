@@ -87,14 +87,16 @@ namespace VAR.PdfTools
             char actualChar = firstChar;
             foreach (IPdfElement elem in widths.Values)
             {
-                if (elem is PdfReal widthReal)
+                var widthReal = elem as PdfReal;
+                if (widthReal != null)
                 {
                     double charWidth = widthReal.Value / glyphSpaceToTextSpace;
                     _widths.Add(actualChar, charWidth);
                     actualChar++;
                     continue;
                 }
-                if (elem is PdfInteger widthInt)
+                var widthInt = elem as PdfInteger;
+                if (widthInt != null)
                 {
                     double charWidth = widthInt.Value / glyphSpaceToTextSpace;
                     _widths.Add(actualChar, charWidth);
