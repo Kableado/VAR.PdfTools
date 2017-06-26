@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VAR.PdfTools.Maths;
@@ -31,9 +32,8 @@ namespace VAR.PdfTools
         public double VisibleHeight { get; set; }
 
         public List<PdfCharElement> Characters { get; set; }
-
-        private List<PdfTextElement> _childs = new List<PdfTextElement>();
-        public List<PdfTextElement> Childs { get { return _childs; } }
+        
+        public List<PdfTextElement> Childs { get; set; }
 
         #endregion
 
@@ -95,6 +95,7 @@ namespace VAR.PdfTools
         {
             _page = page;
             ProcessPageContent();
+            JoinTextElements();
         }
 
         #endregion
@@ -135,6 +136,7 @@ namespace VAR.PdfTools
                     Displacement = (c.Displacement * textElem.Matrix.Matrix[0, 0]),
                 });
             }
+            textElem.Childs = new List<PdfTextElement>();
             return textElem;
         }
 
@@ -519,6 +521,89 @@ namespace VAR.PdfTools
             FlushTextElement();
         }
 
+        private void JoinTextElements()
+        {
+            var textElementsCondensed = new List<PdfTextElement>();
+            while (_textElements.Count > 0)
+            {
+                PdfTextElement elem = _textElements[0];
+                _textElements.Remove(elem);
+                double blockY = elem.GetY();
+                double blockXMin = elem.GetX();
+                double blockXMax = blockXMin + elem.VisibleWidth;
+
+                // Prepare first neighbour
+                var textElementNeighbours = new List<PdfTextElement>();
+                textElementNeighbours.Add(elem);
+
+                // Search Neighbours
+                int i = 0;
+                while (i < _textElements.Count)
+                {
+                    PdfTextElement neighbour = _textElements[i];
+                    double neighbourY = neighbour.GetY();
+                    if (Math.Abs(neighbourY - blockY) > 0.001) { i++; continue; }
+
+                    double neighbourXMin = neighbour.GetX();
+                    double neighbourXMax = neighbourXMin + neighbour.VisibleWidth;
+                    double auxBlockXMin = blockXMin - elem.FontSize;
+                    double auxBlockXMax = blockXMax + elem.FontSize;
+                    if (auxBlockXMax >= neighbourXMin && neighbourXMax >= auxBlockXMin)
+                    {
+                        _textElements.Remove(neighbour);
+                        textElementNeighbours.Add(neighbour);
+                        if (blockXMax < neighbourXMax) { blockXMax = neighbourXMax; }
+                        if (blockXMin > neighbourXMin) { blockXMin = neighbourXMin; }
+                        i = 0;
+                        continue;
+                    }
+                    i++;
+                }
+                
+                if(textElementNeighbours.Count == 0)
+                {
+                    textElementsCondensed.Add(elem);
+                    continue;
+                }
+
+                // Join neighbours
+                var chars = new List<PdfCharElement>();
+                foreach (PdfTextElement neighbour in textElementNeighbours)
+                {
+                    double neighbourXMin = neighbour.GetX();
+                    foreach(PdfCharElement c in neighbour.Characters)
+                    {
+                        chars.Add(new PdfCharElement
+                        {
+                            Char = c.Char,
+                            Displacement = (c.Displacement + neighbourXMin) - blockXMin,
+                        });
+                    }
+                }
+                chars = chars.OrderBy(c => c.Displacement).ToList();
+                var sbText = new StringBuilder();
+                foreach(PdfCharElement c in chars)
+                {
+                    sbText.Append(c.Char);
+                }
+                PdfTextElement blockElem = new PdfTextElement
+                {
+                    Font = null,
+                    FontSize = elem.FontSize,
+                    Matrix = elem.Matrix.Copy(),
+                    RawText = sbText.ToString(),
+                    VisibleText = sbText.ToString(),
+                    VisibleWidth = blockXMax - blockXMin,
+                    VisibleHeight = elem.VisibleHeight,
+                    Characters = chars,
+                    Childs = textElementNeighbours,
+                };
+                blockElem.Matrix.Matrix[0, 2] = blockXMin;
+                textElementsCondensed.Add(blockElem);
+            }
+            _textElements = textElementsCondensed;
+        }
+        
         #endregion
 
         #region Public methods
