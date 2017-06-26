@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using VAR.PdfTools.PdfElements;
 
 namespace VAR.PdfTools
 {

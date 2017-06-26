@@ -60,16 +60,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Maths\Matrix3x3.cs" />
     <Compile Include="PdfContentAction.cs" />
     <Compile Include="PdfDocument.cs" />
     <Compile Include="PdfDocumentPage.cs" />
-    <Compile Include="PdfElements.cs" />
+    <Compile Include="PdfElements\IPdfElement.cs" />
+    <Compile Include="PdfElements\PdfArray.cs" />
+    <Compile Include="PdfElements\PdfBoolean.cs" />
+    <Compile Include="PdfElements\PdfDictionary.cs" />
+    <Compile Include="PdfElements\PdfElementTypes.cs" />
+    <Compile Include="PdfElements\PdfElementUtils.cs" />
     <Compile Include="PdfFilters.cs" />
     <Compile Include="PdfFont.cs" />
+    <Compile Include="PdfElements\PdfInteger.cs" />
+    <Compile Include="PdfElements\PdfName.cs" />
+    <Compile Include="PdfElements\PdfNull.cs" />
+    <Compile Include="PdfElements\PdfObject.cs" />
+    <Compile Include="PdfElements\PdfObjectReference.cs" />
+    <Compile Include="PdfElements\PdfReal.cs" />
+    <Compile Include="PdfElements\PdfStream.cs" />
+    <Compile Include="PdfElements\PdfString.cs" />
     <Compile Include="PdfParser.cs" />
     <Compile Include="PdfStandar14FontMetrics.cs" />
     <Compile Include="PdfTextExtractor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Maths\Vector3D.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="NuGet\keep.txt" />

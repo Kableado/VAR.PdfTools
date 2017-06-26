@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using VAR.PdfTools.PdfElements;
 
 namespace VAR.PdfTools.Workbench
 {
@@ -235,6 +236,8 @@ namespace VAR.PdfTools.Workbench
             string textElementText = textElement.VisibleText;
             string textElementFontName = (textElement.Font == null ? string.Empty : textElement.Font.Name);
 
+            if (textElementHeight < 0.0001) { return; }
+
             double textElementPageX = textElementX;
             double textElementPageY = pageHeight - textElementY;
             
@@ -245,22 +248,20 @@ namespace VAR.PdfTools.Workbench
                 (int)(textElementHeight * Scale),
                 Scale);
 
-            if (textElementHeight > 0.000)
+
+            using (Font font = new Font("Arial", (int)(textElementHeight * Scale), GraphicsUnit.Pixel))
             {
-                using (Font font = new Font("Arial", (int)(textElementHeight * Scale), GraphicsUnit.Pixel))
+                foreach (PdfCharElement c in textElement.Characters)
                 {
-                    foreach (PdfCharElement c in textElement.Characters)
-                    {
-                        gc.DrawString(c.Char,
-                            font,
-                            Brushes.Black,
-                            (int)((textElementPageX + c.Displacement) * Scale),
-                            (int)(textElementPageY * Scale));
-                        gc.FillRectangle(Brushes.Red,
-                            (int)((textElementPageX + c.Displacement) * Scale),
-                            (int)(textElementPageY * Scale),
-                            2, 2);
-                    }
+                    gc.DrawString(c.Char,
+                        font,
+                        Brushes.Black,
+                        (int)((textElementPageX + c.Displacement) * Scale),
+                        (int)(textElementPageY * Scale));
+                    gc.FillRectangle(Brushes.Red,
+                        (int)((textElementPageX + c.Displacement) * Scale),
+                        (int)(textElementPageY * Scale),
+                        2, 2);
                 }
             }
         }

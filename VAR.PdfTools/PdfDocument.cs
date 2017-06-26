@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using VAR.PdfTools.PdfElements;
 
 namespace VAR.PdfTools
 {
