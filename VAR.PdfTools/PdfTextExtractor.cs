@@ -546,8 +546,8 @@ namespace VAR.PdfTools
 
                     double neighbourXMin = neighbour.GetX();
                     double neighbourXMax = neighbourXMin + neighbour.VisibleWidth;
-                    double auxBlockXMin = blockXMin - elem.FontSize;
-                    double auxBlockXMax = blockXMax + elem.FontSize;
+                    double auxBlockXMin = blockXMin - (elem.FontSize * elem.Font.GetCharWidth('m'));
+                    double auxBlockXMax = blockXMax + (elem.FontSize * elem.Font.GetCharWidth('m'));
                     if (auxBlockXMax >= neighbourXMin && neighbourXMax >= auxBlockXMin)
                     {
                         _textElements.Remove(neighbour);
