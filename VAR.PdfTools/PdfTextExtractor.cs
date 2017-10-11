@@ -125,7 +125,8 @@ namespace VAR.PdfTools
             textElem.Matrix = _textMatrixCurrent.Multiply(_graphicsMatrix);
             textElem.RawText = _sbText.ToString();
             textElem.VisibleText = PdfString_ToUnicode(textElem.RawText, _font);
-            textElem.VisibleWidth = _textWidth * textElem.Matrix.Matrix[0, 0];
+            PdfCharElement lastChar = _listCharacters[_listCharacters.Count - 1];
+            textElem.VisibleWidth = (lastChar.Displacement + lastChar.Width) * textElem.Matrix.Matrix[0, 0];
             textElem.VisibleHeight = (_font.Height * _fontSize) * textElem.Matrix.Matrix[1, 1];
             textElem.Characters = new List<PdfCharElement>();
             foreach (PdfCharElement c in _listCharacters)

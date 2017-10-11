@@ -87,7 +87,9 @@ namespace VAR.PdfTools
             char actualChar = firstChar;
             foreach (IPdfElement elem in widths.Values)
             {
-                _widths.Add(actualChar, PdfElementUtils.GetReal(elem, 500) / glyphSpaceToTextSpace);
+                double width = PdfElementUtils.GetReal(elem, 500);
+                if (width < 0.0001f && width > -0.0001f) { width = 500; }
+                _widths.Add(actualChar, width / glyphSpaceToTextSpace);
                 actualChar++;
             }
             // FIMXE: Calculate real height
