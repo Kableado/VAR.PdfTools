@@ -250,9 +250,8 @@ namespace VAR.PdfTools.Workbench
                 (int)(textElementPageY * Scale),
                 (int)(textElementWidth * Scale),
                 (int)(textElementHeight * Scale),
-                Scale);
-
-
+                5);
+            
             using (Font font = new Font("Arial", (int)(textElementHeight * Scale), GraphicsUnit.Pixel))
             {
                 foreach (PdfCharElement c in textElement.Characters)
@@ -264,6 +263,10 @@ namespace VAR.PdfTools.Workbench
                         (int)(textElementPageY * Scale));
                     gc.FillRectangle(Brushes.Red,
                         (int)((textElementPageX + c.Displacement) * Scale),
+                        (int)(textElementPageY * Scale),
+                        2, 2);
+                    gc.FillRectangle(Brushes.Green,
+                        (int)((textElementPageX + c.Displacement + c.Width) * Scale),
                         (int)(textElementPageY * Scale),
                         2, 2);
                 }

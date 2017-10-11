@@ -11,6 +11,7 @@ namespace VAR.PdfTools
     {
         public string Char;
         public double Displacement;
+        public double Width;
     }
 
     public class PdfTextElement
@@ -135,6 +136,7 @@ namespace VAR.PdfTools
                 {
                     Char = c.Char,
                     Displacement = (c.Displacement * textElem.Matrix.Matrix[0, 0]),
+                    Width = (c.Width * textElem.Matrix.Matrix[0, 0]),
                 });
             }
             textElem.Childs = new List<PdfTextElement>();
@@ -321,8 +323,8 @@ namespace VAR.PdfTools
                 {
                     string realChar = _font.ToUnicode(c);
                     if (realChar == "\0") { continue; }
-                    _listCharacters.Add(new PdfCharElement { Char = _font.ToUnicode(c), Displacement = _textWidth, });
                     double charWidth = _font.GetCharWidth(c) * _fontSize;
+                    _listCharacters.Add(new PdfCharElement { Char = _font.ToUnicode(c), Displacement = _textWidth, Width = charWidth });
                     _textWidth += charWidth;
                     _textWidth += ((c == 0x20) ? _wordSpacing : _charSpacing);
                 }
@@ -620,6 +622,7 @@ namespace VAR.PdfTools
                         {
                             Char = c.Char,
                             Displacement = (c.Displacement + neighbourXMin) - blockXMin,
+                            Width = c.Width,
                         });
                     }
                 }
