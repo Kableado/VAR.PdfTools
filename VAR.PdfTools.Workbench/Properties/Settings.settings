@@ -5,13 +5,13 @@
     <Setting Name="LastPdfPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LastColumnName" Type="System.String" Scope="User">
+    <Setting Name="Field1" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LastFieldName" Type="System.String" Scope="User">
+    <Setting Name="Field2" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LastText" Type="System.String" Scope="User">
+    <Setting Name="Field3" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using VAR.PdfTools.PdfElements;
 
@@ -20,17 +21,17 @@ namespace VAR.PdfTools.Workbench
         private void FrmPdfInfo_Load(object sender, EventArgs e)
         {
             txtPdfPath.Text = Properties.Settings.Default.LastPdfPath;
-            txtColumnName.Text = Properties.Settings.Default.LastColumnName;
-            txtFieldName.Text = Properties.Settings.Default.LastFieldName;
-            txtText.Text = Properties.Settings.Default.LastText;
+            txtField1.Text = Properties.Settings.Default.Field1;
+            txtField2.Text = Properties.Settings.Default.Field2;
+            txtField3.Text = Properties.Settings.Default.Field3;
         }
 
         private void FrmPdfInfo_FormClosing(object sender, FormClosingEventArgs e)
         {
             Properties.Settings.Default.LastPdfPath = txtPdfPath.Text;
-            Properties.Settings.Default.LastColumnName = txtColumnName.Text;
-            Properties.Settings.Default.LastFieldName = txtFieldName.Text;
-            Properties.Settings.Default.LastText = txtText.Text;
+            Properties.Settings.Default.Field1 = txtField1.Text;
+            Properties.Settings.Default.Field2 = txtField2.Text;
+            Properties.Settings.Default.Field3 = txtField3.Text;
             Properties.Settings.Default.Save();
         }
 
@@ -118,64 +119,136 @@ namespace VAR.PdfTools.Workbench
             txtOutput.Lines = lines.ToArray();
         }
 
-        private void btnGetColumn_Click(object sender, EventArgs e)
+        private void btnHasText1_Click(object sender, EventArgs e)
         {
-            if (System.IO.File.Exists(txtPdfPath.Text) == false)
-            {
-                MessageBox.Show("File does not exist");
-                return;
-            }
+            string pdfPath = txtPdfPath.Text;
+            string text = txtField1.Text;
 
-            PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
-
-            var columnData = new List<string>();
-            foreach (PdfDocumentPage page in doc.Pages)
-            {
-                PdfTextExtractor extractor = new PdfTextExtractor(page);
-                columnData.AddRange(extractor.GetColumn(txtColumnName.Text));
-            }
-            txtOutput.Lines = columnData.ToArray();
+            Action_HasText(pdfPath, text);
         }
 
-        private void btnGetField_Click(object sender, EventArgs e)
+        private void btnGetField1_Click(object sender, EventArgs e)
         {
-            if (System.IO.File.Exists(txtPdfPath.Text) == false)
-            {
-                MessageBox.Show("File does not exist");
-                return;
-            }
+            string pdfPath = txtPdfPath.Text;
+            string field = txtField1.Text;
 
-            PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
-
-            var fieldData = new List<string>();
-            foreach (PdfDocumentPage page in doc.Pages)
-            {
-                PdfTextExtractor extractor = new PdfTextExtractor(page);
-                fieldData.Add(extractor.GetField(txtFieldName.Text));
-            }
-            txtOutput.Lines = fieldData.ToArray();
+            Action_GetField(pdfPath, field);
         }
 
-        private void btnHasText_Click(object sender, EventArgs e)
+        private void btnGetColumn1_Click(object sender, EventArgs e)
         {
-            if (System.IO.File.Exists(txtPdfPath.Text) == false)
+            string pdfPath = txtPdfPath.Text;
+            string column = txtField1.Text;
+
+            Action_GetColumn(pdfPath, column);
+        }
+
+        private void btnHasText2_Click(object sender, EventArgs e)
+        {
+            string pdfPath = txtPdfPath.Text;
+            string text = txtField2.Text;
+
+            Action_HasText(pdfPath, text);
+        }
+
+        private void btnGetField2_Click(object sender, EventArgs e)
+        {
+            string pdfPath = txtPdfPath.Text;
+            string field = txtField2.Text;
+
+            Action_GetField(pdfPath, field);
+        }
+
+        private void btnGetColumn2_Click(object sender, EventArgs e)
+        {
+            string pdfPath = txtPdfPath.Text;
+            string column = txtField2.Text;
+
+            Action_GetColumn(pdfPath, column);
+        }
+
+        private void btnHasText3_Click(object sender, EventArgs e)
+        {
+            string pdfPath = txtPdfPath.Text;
+            string text = txtField3.Text;
+
+            Action_HasText(pdfPath, text);
+        }
+
+        private void btnGetField3_Click(object sender, EventArgs e)
+        {
+            string pdfPath = txtPdfPath.Text;
+            string field = txtField3.Text;
+
+            Action_GetField(pdfPath, field);
+        }
+
+        private void btnGetColumn3_Click(object sender, EventArgs e)
+        {
+            string pdfPath = txtPdfPath.Text;
+            string column = txtField3.Text;
+
+            Action_GetColumn(pdfPath, column);
+        }
+
+        private void Action_HasText(string pdfPath, string text)
+        {
+            if (System.IO.File.Exists(pdfPath) == false)
             {
                 MessageBox.Show("File does not exist");
                 return;
             }
 
-            PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
+            PdfDocument doc = PdfDocument.Load(pdfPath);
 
             List<string> lines = new List<string>();
             int pageNum = 1;
             foreach (PdfDocumentPage page in doc.Pages)
             {
                 PdfTextExtractor extractor = new PdfTextExtractor(page);
-                lines.Add(string.Format("Page({0}) : {1}", pageNum, Convert.ToString(extractor.HasText(txtText.Text))));
+                lines.Add(string.Format("Page({0}) : {1}", pageNum, Convert.ToString(extractor.HasText(text))));
             }
             txtOutput.Lines = lines.ToArray();
         }
 
+        private void Action_GetField(string pdfPath, string field)
+        {
+            if (System.IO.File.Exists(pdfPath) == false)
+            {
+                MessageBox.Show("File does not exist");
+                return;
+            }
+
+            PdfDocument doc = PdfDocument.Load(pdfPath);
+
+            var fieldData = new List<string>();
+            foreach (PdfDocumentPage page in doc.Pages)
+            {
+                PdfTextExtractor extractor = new PdfTextExtractor(page);
+                fieldData.Add(extractor.GetField(field));
+            }
+            txtOutput.Lines = fieldData.ToArray();
+        }
+
+        private void Action_GetColumn(string pdfPath, string column)
+        {
+            if (System.IO.File.Exists(pdfPath) == false)
+            {
+                MessageBox.Show("File does not exist");
+                return;
+            }
+
+            PdfDocument doc = PdfDocument.Load(pdfPath);
+
+            var columnData = new List<string>();
+            foreach (PdfDocumentPage page in doc.Pages)
+            {
+                PdfTextExtractor extractor = new PdfTextExtractor(page);
+                columnData.AddRange(extractor.GetColumn(column));
+            }
+            txtOutput.Lines = columnData.ToArray();
+        }
+        
         private void btnRender_Click(object sender, EventArgs e)
         {
             if (File.Exists(txtPdfPath.Text) == false)

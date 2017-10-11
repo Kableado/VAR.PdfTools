@@ -12,7 +12,7 @@ namespace VAR.PdfTools.Workbench.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "10.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "14.0.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -38,36 +38,36 @@ namespace VAR.PdfTools.Workbench.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastColumnName {
+        public string Field1 {
             get {
-                return ((string)(this["LastColumnName"]));
+                return ((string)(this["Field1"]));
             }
             set {
-                this["LastColumnName"] = value;
+                this["Field1"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastFieldName {
+        public string Field2 {
             get {
-                return ((string)(this["LastFieldName"]));
+                return ((string)(this["Field2"]));
             }
             set {
-                this["LastFieldName"] = value;
+                this["Field2"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastText {
+        public string Field3 {
             get {
-                return ((string)(this["LastText"]));
+                return ((string)(this["Field3"]));
             }
             set {
-                this["LastText"] = value;
+                this["Field3"] = value;
             }
         }
     }
