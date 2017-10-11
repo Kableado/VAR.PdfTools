@@ -168,7 +168,7 @@ namespace VAR.PdfTools.Workbench
                 return;
             }
 
-            const int Scale = 5;
+            int MaxSize = 10000;
 
             PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
             string baseDocumentPath = Path.GetDirectoryName(txtPdfPath.Text);
@@ -205,6 +205,10 @@ namespace VAR.PdfTools.Workbench
                 // Prepare page image
                 int pageWidth = (int)Math.Ceiling(pageXMax - pageXMin);
                 int pageHeight = (int)Math.Ceiling(pageYMax - pageYMin);
+                int Scale = 10;
+                while ((pageWidth * Scale) > MaxSize) { Scale--; }
+                while ((pageHeight * Scale) > MaxSize) { Scale--; }
+                if (Scale <= 0) { Scale = 1; }
                 using (Bitmap bmp = new Bitmap(pageWidth * Scale, pageHeight * Scale, PixelFormat.Format32bppArgb))
                 using (Graphics gc = Graphics.FromImage(bmp))
                 using (Pen penTextElem = new Pen(Color.Blue))
