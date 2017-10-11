@@ -92,9 +92,25 @@ namespace VAR.PdfTools.Workbench
                 PdfTextExtractor extractor = new PdfTextExtractor(page);
                 foreach (PdfTextElement textElement in extractor.Elements)
                 {
+                    string fontName = textElement.Font == null ? "#NULL#" : textElement.Font.Name;
+                    if (fontName == "#NULL#" && textElement.Childs.Count > 0)
+                    {
+                        var fontNames = textElement.Childs.Select(c => c.Font == null ? "#NULL#" : c.Font.Name);
+                        StringBuilder sbFontName = new StringBuilder();
+                        foreach(string fontNameAux in fontNames)
+                        {
+                            if (sbFontName.Length > 0) { sbFontName.Append(";"); }
+                            sbFontName.Append(fontNameAux);
+                        }
+                        fontName = sbFontName.ToString();
+                    }
+
                     lines.Add(string.Format("Text({0}, {1})({2}, {3})[{4}]: \"{5}\"",
-                        textElement.Matrix.Matrix[0, 2], textElement.Matrix.Matrix[1, 2], textElement.VisibleWidth, textElement.VisibleHeight,
-                        textElement.Font == null ? "#NULL#" : textElement.Font.Name,
+                        Math.Round(textElement.Matrix.Matrix[0, 2], 2),
+                        Math.Round(textElement.Matrix.Matrix[1, 2], 2),
+                        Math.Round(textElement.VisibleWidth, 2),
+                        Math.Round(textElement.VisibleHeight, 2),
+                        fontName,
                         textElement.VisibleText));
                 }
             }
