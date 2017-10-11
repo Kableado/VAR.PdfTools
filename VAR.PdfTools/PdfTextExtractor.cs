@@ -50,6 +50,41 @@ namespace VAR.PdfTools
             return Matrix.Matrix[1, 2];
         }
 
+        public PdfTextElement SubPart(int startIndex, int endIndex)
+        {
+            PdfTextElement blockElem = new PdfTextElement
+            {
+                Font = null,
+                FontSize = FontSize,
+                Matrix = Matrix.Copy(),
+                RawText = RawText.Substring(startIndex, endIndex - startIndex),
+                VisibleText = VisibleText.Substring(startIndex, endIndex - startIndex),
+                VisibleWidth = 0,
+                VisibleHeight = VisibleHeight,
+                Characters = new List<PdfCharElement>(),
+                Childs = new List<PdfTextElement>(),
+            };
+            double displacement = Characters[startIndex].Displacement;
+            blockElem.Matrix.Matrix[0, 2] += displacement;
+            for (int j = startIndex; j < endIndex; j++)
+            {
+                blockElem.Characters.Add(new PdfCharElement
+                {
+                    Char = Characters[j].Char,
+                    Displacement = Characters[j].Displacement - displacement,
+                    Width = Characters[j].Width,
+                });
+            }
+            PdfCharElement lastChar = blockElem.Characters[blockElem.Characters.Count - 1];
+            blockElem.VisibleWidth = lastChar.Displacement + lastChar.Width;
+            foreach (PdfTextElement elem in Childs)
+            {
+                blockElem.Childs.Add(elem);
+            }
+
+            return blockElem;
+        }
+
         #endregion
     }
 
@@ -97,8 +132,9 @@ namespace VAR.PdfTools
             _page = page;
             ProcessPageContent();
             JoinTextElements();
+            SplitTextElements();
         }
-
+        
         #endregion
 
         #region Utility methods
@@ -650,6 +686,38 @@ namespace VAR.PdfTools
             _textElements = textElementsCondensed;
         }
         
+        private void SplitTextElements()
+        {
+            var textElementsSplitted = new List<PdfTextElement>();
+            while (_textElements.Count > 0)
+            {
+                PdfTextElement elem = _textElements[0];
+                _textElements.Remove(elem);
+                
+                int prevBreak = 0;
+                for (int i = 1; i < elem.Characters.Count; i++)
+                {
+                    double prevCharEnd = elem.Characters[i - 1].Displacement + elem.Characters[i - 1].Width;
+                    double charSeparation = elem.Characters[i].Displacement - prevCharEnd;
+                    if (charSeparation > (elem.Characters[i - 1].Width * 2))
+                    {
+                        PdfTextElement partElem = elem.SubPart(prevBreak, i);
+                        textElementsSplitted.Add(partElem);
+                        prevBreak = i;
+                    }
+                }
+
+                if (prevBreak == 0)
+                {
+                    textElementsSplitted.Add(elem);
+                    continue;
+                }
+                PdfTextElement lastElem = elem.SubPart(prevBreak, elem.Characters.Count);
+                textElementsSplitted.Add(lastElem);
+            }
+            _textElements = textElementsSplitted;
+        }
+
         #endregion
 
         #region Public methods
