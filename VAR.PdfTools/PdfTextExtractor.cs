@@ -356,6 +356,9 @@ namespace VAR.PdfTools
         private void ProcessPageContent()
         {
             int unknowCount = 0;
+            int lineCount = 0;
+            int strokeCount = 0;
+            int pathCount = 0;
             for (int i = 0; i < _page.ContentActions.Count; i++)
             {
                 PdfContentAction action = _page.ContentActions[i];
@@ -512,6 +515,45 @@ namespace VAR.PdfTools
                 else if (action.Token == "Do")
                 {
                     // FIXME: Interpret this
+                }
+                else if (action.Token == "m")
+                {
+                    // FIXME: Interpret this "moveto: Begin new subpath"
+                }
+                else if (action.Token == "l")
+                {
+                    // FIXME: Interpret this "lineto: Append straight line segment to path"
+                    lineCount++;
+                }
+                else if (action.Token == "h")
+                {
+                    // FIXME: Interpret this "closepath: Close subpath"
+                    pathCount++;
+                }
+                else if (action.Token == "W")
+                {
+                    // FIXME: Interpret this "clip: Set clipping path using nonzero winding number rule"
+                }
+                else if (action.Token == "W*")
+                {
+                    // FIXME: Interpret this "eoclip: Set clipping path using even-odd rule"
+                }
+                else if (action.Token == "w")
+                {
+                    // FIXME: Interpret this "setlinewidth: Set line width"
+                }
+                else if (action.Token == "G")
+                {
+                    // FIXME: Interpret this "setgray: Set gray level for stroking operations"
+                }
+                else if (action.Token == "S")
+                {
+                    // FIXME: Interpret this "stroke: Stroke path"
+                    strokeCount++;
+                }
+                else if (action.Token == "M")
+                {
+                    // FIXME: Interpret this "setmiterlimit: Set miter limit"
                 }
                 else
                 {
