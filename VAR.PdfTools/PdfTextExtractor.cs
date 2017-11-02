@@ -601,7 +601,7 @@ namespace VAR.PdfTools
             }
             FlushTextElement();
         }
-
+        
         private void JoinTextElements()
         {
             var textElementsCondensed = new List<PdfTextElement>();
@@ -625,10 +625,12 @@ namespace VAR.PdfTools
                     double neighbourY = neighbour.GetY();
                     if (Math.Abs(neighbourY - blockY) > 0.001) { i++; continue; }
 
+                    double maxWidth = neighbour.Characters.Max(c => c.Width);
+
                     double neighbourXMin = neighbour.GetX();
                     double neighbourXMax = neighbourXMin + neighbour.VisibleWidth;
-                    double auxBlockXMin = blockXMin - (elem.FontSize * elem.Font.GetCharWidth('m'));
-                    double auxBlockXMax = blockXMax + (elem.FontSize * elem.Font.GetCharWidth('m'));
+                    double auxBlockXMin = blockXMin - maxWidth;
+                    double auxBlockXMax = blockXMax + maxWidth;
                     if (auxBlockXMax >= neighbourXMin && neighbourXMax >= auxBlockXMin)
                     {
                         _textElements.Remove(neighbour);
@@ -693,13 +695,15 @@ namespace VAR.PdfTools
             {
                 PdfTextElement elem = _textElements[0];
                 _textElements.Remove(elem);
-                
+
+                double maxWidth = elem.Characters.Max(c => c.Width);
+
                 int prevBreak = 0;
                 for (int i = 1; i < elem.Characters.Count; i++)
                 {
                     double prevCharEnd = elem.Characters[i - 1].Displacement + elem.Characters[i - 1].Width;
                     double charSeparation = elem.Characters[i].Displacement - prevCharEnd;
-                    if (charSeparation > (elem.Characters[i - 1].Width * 2))
+                    if (charSeparation > maxWidth)
                     {
                         PdfTextElement partElem = elem.SubPart(prevBreak, i);
                         textElementsSplitted.Add(partElem);
