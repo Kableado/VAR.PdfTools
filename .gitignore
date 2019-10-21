@@ -27,3 +27,5 @@ obj/
 _ReSharper*/
 *.userprefs
 *.nupkg
+
+.vs
