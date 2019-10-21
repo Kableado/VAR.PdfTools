@@ -33,7 +33,7 @@ namespace VAR.PdfTools
         public double VisibleHeight { get; set; }
 
         public List<PdfCharElement> Characters { get; set; }
-        
+
         public List<PdfTextElement> Childs { get; set; }
 
         #endregion
@@ -85,6 +85,11 @@ namespace VAR.PdfTools
             return blockElem;
         }
 
+        public double MaxWidth()
+        {
+            return Characters.Average(c => c.Width) / 2;
+        }
+
         #endregion
     }
 
@@ -134,7 +139,7 @@ namespace VAR.PdfTools
             JoinTextElements();
             SplitTextElements();
         }
-        
+
         #endregion
 
         #region Utility methods
@@ -290,7 +295,7 @@ namespace VAR.PdfTools
             _graphicsMatrix = _graphicsMatrixStack[_graphicsMatrixStack.Count - 1];
             _graphicsMatrixStack.RemoveAt(_graphicsMatrixStack.Count - 1);
         }
-        
+
         private void OpBeginText()
         {
             _textMatrix.Idenity();
@@ -310,7 +315,7 @@ namespace VAR.PdfTools
             _font = _page.Fonts[fontName];
             _fontSize = size;
         }
-        
+
         private void OpTextCharSpacing(double charSpacing)
         {
             _charSpacing = charSpacing;
@@ -601,7 +606,7 @@ namespace VAR.PdfTools
             }
             FlushTextElement();
         }
-        
+
         private void JoinTextElements()
         {
             var textElementsCondensed = new List<PdfTextElement>();
@@ -622,10 +627,17 @@ namespace VAR.PdfTools
                 while (i < _textElements.Count)
                 {
                     PdfTextElement neighbour = _textElements[i];
+
+                    if (neighbour.Font != elem.Font || neighbour.FontSize != elem.FontSize)
+                    {
+                        i++;
+                        continue;
+                    }
+
                     double neighbourY = neighbour.GetY();
                     if (Math.Abs(neighbourY - blockY) > 0.001) { i++; continue; }
 
-                    double maxWidth = neighbour.Characters.Max(c => c.Width);
+                    double maxWidth = neighbour.MaxWidth();
 
                     double neighbourXMin = neighbour.GetX();
                     double neighbourXMax = neighbourXMin + neighbour.VisibleWidth;
@@ -642,8 +654,8 @@ namespace VAR.PdfTools
                     }
                     i++;
                 }
-                
-                if(textElementNeighbours.Count == 0)
+
+                if (textElementNeighbours.Count == 1)
                 {
                     textElementsCondensed.Add(elem);
                     continue;
@@ -654,7 +666,7 @@ namespace VAR.PdfTools
                 foreach (PdfTextElement neighbour in textElementNeighbours)
                 {
                     double neighbourXMin = neighbour.GetX();
-                    foreach(PdfCharElement c in neighbour.Characters)
+                    foreach (PdfCharElement c in neighbour.Characters)
                     {
                         chars.Add(new PdfCharElement
                         {
@@ -666,7 +678,7 @@ namespace VAR.PdfTools
                 }
                 chars = chars.OrderBy(c => c.Displacement).ToList();
                 var sbText = new StringBuilder();
-                foreach(PdfCharElement c in chars)
+                foreach (PdfCharElement c in chars)
                 {
                     sbText.Append(c.Char);
                 }
@@ -687,7 +699,7 @@ namespace VAR.PdfTools
             }
             _textElements = textElementsCondensed;
         }
-        
+
         private void SplitTextElements()
         {
             var textElementsSplitted = new List<PdfTextElement>();
@@ -696,7 +708,7 @@ namespace VAR.PdfTools
                 PdfTextElement elem = _textElements[0];
                 _textElements.Remove(elem);
 
-                double maxWidth = elem.Characters.Max(c => c.Width);
+                double maxWidth = elem.MaxWidth();
 
                 int prevBreak = 0;
                 for (int i = 1; i < elem.Characters.Count; i++)
