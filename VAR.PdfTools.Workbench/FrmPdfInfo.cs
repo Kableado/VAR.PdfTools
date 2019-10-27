@@ -19,19 +19,27 @@ namespace VAR.PdfTools.Workbench
 
         private void FrmPdfInfo_Load(object sender, EventArgs e)
         {
-            txtPdfPath.Text = Properties.Settings.Default.LastPdfPath;
-            txtField1.Text = Properties.Settings.Default.Field1;
-            txtField2.Text = Properties.Settings.Default.Field2;
-            txtField3.Text = Properties.Settings.Default.Field3;
+            var configuration = new Configuration();
+            configuration.Load();
+            txtPdfPath.Text = configuration.Get("LastPdfPath", string.Empty);
+            txtField1.Text = configuration.Get("Field1", string.Empty);
+            txtField2.Text = configuration.Get("Field2", string.Empty);
+            txtField3.Text = configuration.Get("Field3", string.Empty);
+            txtPages.Text = configuration.Get("Pages", string.Empty);
+            chkRender.Checked = configuration.Get("Render", false);
         }
 
         private void FrmPdfInfo_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Properties.Settings.Default.LastPdfPath = txtPdfPath.Text;
-            Properties.Settings.Default.Field1 = txtField1.Text;
-            Properties.Settings.Default.Field2 = txtField2.Text;
-            Properties.Settings.Default.Field3 = txtField3.Text;
-            Properties.Settings.Default.Save();
+            var configuration = new Configuration();
+            var configItems = new Dictionary<string, string>();
+            configuration.Set("LastPdfPath", txtPdfPath.Text);
+            configuration.Set("Field1", txtField1.Text);
+            configuration.Set("Field2", txtField2.Text);
+            configuration.Set("Field3", txtField3.Text);
+            configuration.Set("Pages", txtPages.Text);
+            configuration.Set("Render", chkRender.Checked);
+            configuration.Save();
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
