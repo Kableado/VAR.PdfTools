@@ -671,7 +671,7 @@ namespace VAR.PdfTools
             {
                 return PdfTextElementColumn.Empty;
             }
-            double headY = columnHead.GetY();
+            double headY = columnHead.GetY() - columnHead.VisibleHeight;
             double headX1 = columnHead.GetX();
             double headX2 = headX1 + columnHead.VisibleWidth;
 

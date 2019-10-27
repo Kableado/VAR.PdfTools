@@ -85,6 +85,13 @@ namespace VAR.PdfTools
                 gc = Graphics.FromImage(bmp);
             }
 
+            // Draw text elements of the column header
+            using (Pen penTextElem = new Pen(Color.Green))
+            using (Pen penCharElem = new Pen(Color.DarkGreen))
+            {
+                DrawTextElement(columnData.HeadTextElement, gc, penTextElem, penCharElem, _scale, _pageHeight, _pageRect.XMin, _pageRect.YMin, Brushes.Olive);
+            }
+
             // Draw text elements of the column
             using (Pen penTextElem = new Pen(Color.Red))
             using (Pen penCharElem = new Pen(Color.DarkRed))
