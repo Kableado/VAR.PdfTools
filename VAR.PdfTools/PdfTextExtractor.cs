@@ -651,13 +651,8 @@ namespace VAR.PdfTools
         #endregion
 
         #region Public methods
-
-        public List<string> GetColumn(string column)
-        {
-            return GetColumn(column, true);
-        }
-
-        public List<string> GetColumn(string column, bool fuzzy)
+        
+        public List<string> GetColumnAsStrings(string column, bool fuzzy =true)
         {
             PdfTextElement columnHead = FindElementByText(column, fuzzy);
             if (columnHead == null)
@@ -709,7 +704,7 @@ namespace VAR.PdfTools
             }
             columnDataRaw = columnDataRaw.OrderByDescending(elem => elem.GetY()).ToList();
 
-            // Only items completelly inside extents, amd break on the first element outside
+            // Only items completelly inside extents, and break on the first element outside
             var columnData = new List<PdfTextElement>();
             foreach (PdfTextElement elem in columnDataRaw)
             {
@@ -728,13 +723,8 @@ namespace VAR.PdfTools
             }
             return result;
         }
-
-        public string GetField(string field)
-        {
-            return GetField(field, true);
-        }
-
-        public string GetField(string field, bool fuzzy)
+        
+        public string GetFieldAsString(string field, bool fuzzy = true)
         {
             PdfTextElement fieldTitle = FindElementByText(field, fuzzy);
             if (fieldTitle == null)
@@ -761,13 +751,8 @@ namespace VAR.PdfTools
 
             return fieldData.OrderBy(elem => elem.GetX()).FirstOrDefault().VisibleText;
         }
-
-        public bool HasText(string text)
-        {
-            return HasText(text, true);
-        }
-
-        public bool HasText(string text, bool fuzzy)
+        
+        public bool HasText(string text, bool fuzzy = true)
         {
             List<PdfTextElement> list = FindElementsContainingText(text, fuzzy);
             return (list.Count > 0);

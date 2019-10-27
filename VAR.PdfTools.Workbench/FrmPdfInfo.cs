@@ -280,7 +280,7 @@ namespace VAR.PdfTools.Workbench
                 pageNum++;
                 if (selectedPages.Contains(pageNum) == false) { continue; }
                 PdfTextExtractor extractor = new PdfTextExtractor(page);
-                fieldData.Add(extractor.GetField(field));
+                fieldData.Add(extractor.GetFieldAsString(field));
             }
             txtOutput.Lines = fieldData.ToArray();
         }
@@ -303,7 +303,7 @@ namespace VAR.PdfTools.Workbench
                 pageNum++;
                 if (selectedPages.Contains(pageNum) == false) { continue; }
                 PdfTextExtractor extractor = new PdfTextExtractor(page);
-                columnData.AddRange(extractor.GetColumn(column));
+                columnData.AddRange(extractor.GetColumnAsStrings(column));
             }
             txtOutput.Lines = columnData.ToArray();
         }

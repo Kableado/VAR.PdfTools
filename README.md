@@ -5,27 +5,33 @@
 ### VAR.PdfTools
 Add the resulting assembly as reference in your projects, and this line on code:
 
-	using VAR.PdfTools;
+```csharp
+    using VAR.PdfTools;
+```
 
 Then extract the contents of a data column using:
 
+```csharp
     var columnData = new List<string>();
     PdfDocument doc = PdfDocument.Load("document.pdf");
     foreach (PdfDocumentPage page in doc.Pages)
     {
         PdfTextExtractor extractor = new PdfTextExtractor(page);
-        columnData.AddRange(extractor.GetColumn("Column"));
+        columnData.AddRange(extractor.GetColumnAsStrings("Column"));
     }
-    
+```
+
 Or the content of a field (text on the right of the indicated text):
 
+```csharp
     var fieldData = new List<string>();
     PdfDocument doc = PdfDocument.Load("document.pdf");
     foreach (PdfDocumentPage page in doc.Pages)
     {
         PdfTextExtractor extractor = new PdfTextExtractor(page);
-        fieldData.Add(extractor.GetField(txtFieldName.Text));
+        fieldData.Add(extractor.GetFieldAsString(txtFieldName.Text));
     }
+```
 
 ### VAR.PdfTools.Workbench
 It is a simple Windows.Forms application, to test basic funcitionallity of the library.
@@ -34,7 +40,8 @@ It is a simple Windows.Forms application, to test basic funcitionallity of the l
 A Visual Studio 2015 and 2010 solutions are provided. Simply, click build on the IDE.
 
 A .nuget package can be build using:
-	VAR.PdfTools\Build.NuGet.cmd
+
+    VAR.PdfTools\Build.NuGet.cmd
 
 ## Contributing
 1. Fork it!
