@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Maths\Matrix3x3.cs" />
+    <Compile Include="Maths\Rect.cs" />
     <Compile Include="PdfContentAction.cs" />
     <Compile Include="PdfDocument.cs" />
     <Compile Include="PdfDocumentPage.cs" />

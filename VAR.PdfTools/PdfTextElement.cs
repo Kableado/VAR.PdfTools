@@ -87,6 +87,19 @@ namespace VAR.PdfTools
             return Characters.Average(c => c.Width);
         }
 
+        public Rect GetRect()
+        {
+            double x = GetX();
+            double y = GetY();
+            return new Rect
+            {
+                XMin = x,
+                YMax = y,
+                XMax = x + VisibleWidth,
+                YMin = y - VisibleHeight,
+            };
+        }
+
         #endregion
     }
 

@@ -652,6 +652,18 @@ namespace VAR.PdfTools
 
         #region Public methods
         
+        public Rect GetRect()
+        {
+            Rect rect = null;
+            foreach (PdfTextElement textElement in _textElements)
+            {
+                Rect elementRect = textElement.GetRect();
+                if (rect == null) { rect = elementRect; }
+                rect.Add(elementRect);
+            }
+            return rect;
+        }
+
         public List<string> GetColumnAsStrings(string column, bool fuzzy =true)
         {
             PdfTextElement columnHead = FindElementByText(column, fuzzy);
