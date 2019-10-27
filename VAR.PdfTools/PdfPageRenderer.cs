@@ -22,6 +22,12 @@ namespace VAR.PdfTools
 
         public Bitmap Render()
         {
+            if (_pdfTextExtractor.Elements.Count == 0)
+            {
+                Bitmap emptyBmp = new Bitmap(100, 200, PixelFormat.Format32bppArgb);
+                return emptyBmp;
+            }
+
             double pageXMin = double.MaxValue;
             double pageYMin = double.MaxValue;
             double pageXMax = double.MinValue;
@@ -40,6 +46,7 @@ namespace VAR.PdfTools
                 if (textElementXMin < pageXMin) { pageXMin = textElementXMin; }
                 if (textElementYMin < pageYMin) { pageYMin = textElementYMin; }
             }
+
             // Prepare page image
             int pageWidth = (int)Math.Ceiling(pageXMax - pageXMin);
             int pageHeight = (int)Math.Ceiling(pageYMax - pageYMin);
@@ -50,19 +57,20 @@ namespace VAR.PdfTools
             Bitmap bmp = new Bitmap(pageWidth * Scale, pageHeight * Scale, PixelFormat.Format32bppArgb);
             using (Graphics gc = Graphics.FromImage(bmp))
             using (Pen penTextElem = new Pen(Color.Blue))
+            using (Pen penCharElem = new Pen(Color.Navy))
             {
                 gc.Clear(Color.White);
 
                 // Draw text elements
                 foreach (PdfTextElement textElement in _pdfTextExtractor.Elements)
                 {
-                    DrawTextElement(textElement, gc, penTextElem, Scale, pageHeight, pageXMin, pageYMin);
+                    DrawTextElement(textElement, gc, penTextElem, penCharElem, Scale, pageHeight, pageXMin, pageYMin, Brushes.Black);
                 }
             }
             return bmp;
         }
 
-        private static void DrawTextElement(PdfTextElement textElement, Graphics gc, Pen penTextElem, int Scale, int pageHeight, double pageXMin, double pageYMin)
+        private static void DrawTextElement(PdfTextElement textElement, Graphics gc, Pen penTextElem, Pen penCharElem, int Scale, int pageHeight, double pageXMin, double pageYMin, Brush brushText)
         {
             double textElementX = textElement.GetX() - pageXMin;
             double textElementY = textElement.GetY() - pageYMin;
@@ -76,12 +84,15 @@ namespace VAR.PdfTools
             double textElementPageX = textElementX;
             double textElementPageY = pageHeight - textElementY;
 
-            DrawRoundedRectangle(gc, penTextElem,
-                (int)(textElementPageX * Scale),
-                (int)(textElementPageY * Scale),
-                (int)(textElementWidth * Scale),
-                (int)(textElementHeight * Scale),
-                5);
+            if (penTextElem != null)
+            {
+                DrawRoundedRectangle(gc, penTextElem,
+                    (int)(textElementPageX * Scale),
+                    (int)(textElementPageY * Scale),
+                    (int)(textElementWidth * Scale),
+                    (int)(textElementHeight * Scale),
+                    5);
+            }
 
             using (Font font = new Font("Arial", (int)(textElementHeight * Scale), GraphicsUnit.Pixel))
             {
@@ -89,17 +100,18 @@ namespace VAR.PdfTools
                 {
                     gc.DrawString(c.Char,
                         font,
-                        Brushes.Black,
+                        brushText,
                         (int)((textElementPageX + c.Displacement) * Scale),
                         (int)(textElementPageY * Scale));
-                    gc.FillRectangle(Brushes.Red,
-                        (int)((textElementPageX + c.Displacement) * Scale),
-                        (int)(textElementPageY * Scale),
-                        2, 2);
-                    gc.FillRectangle(Brushes.Green,
-                        (int)((textElementPageX + c.Displacement + c.Width) * Scale),
-                        (int)(textElementPageY * Scale),
-                        2, 2);
+                    if (penCharElem != null)
+                    {
+                        DrawRoundedRectangle(gc, penCharElem,
+                            (int)((textElementPageX + c.Displacement) * Scale),
+                            (int)(textElementPageY * Scale),
+                            (int)(c.Width * Scale),
+                            (int)(textElementHeight * Scale),
+                            5);
+                    }
                 }
             }
         }
