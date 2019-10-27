@@ -24,15 +24,18 @@ namespace VAR.PdfTools
         {
             _page = page;
             _pdfTextExtractor = new PdfTextExtractor(_page);
+            InitPage();
         }
 
         public PdfPageRenderer(PdfTextExtractor pdfTextExtractor)
         {
             _pdfTextExtractor = pdfTextExtractor;
             _page = pdfTextExtractor.Page;
+            InitPage();
+        }
 
-
-            // Calculate page size and scale
+        private void InitPage()
+        {
             _pageRect = _pdfTextExtractor.GetRect();
             _pageWidth = (int)Math.Ceiling(_pageRect.XMax - _pageRect.XMin);
             _pageHeight = (int)Math.Ceiling(_pageRect.YMax - _pageRect.YMin);
@@ -120,6 +123,7 @@ namespace VAR.PdfTools
 
         private static void DrawTextElement(PdfTextElement textElement, Graphics gc, Pen penTextElem, Pen penCharElem, int scale, int pageHeight, double pageXMin, double pageYMin, Brush brushText)
         {
+            if (textElement == null) { return; }
             double textElementX = textElement.GetX() - pageXMin;
             double textElementY = textElement.GetY() - pageYMin;
             double textElementWidth = textElement.VisibleWidth;

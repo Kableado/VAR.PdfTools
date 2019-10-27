@@ -116,7 +116,10 @@ namespace VAR.PdfTools
 
         public static PdfTextElementColumn Empty { get; } = new PdfTextElementColumn();
 
-        private PdfTextElementColumn() { }
+        private PdfTextElementColumn()
+        {
+            Elements = new List<PdfTextElement>();
+        }
 
         public PdfTextElementColumn(PdfTextElement head, IEnumerable<PdfTextElement> elements, double y, double x1, double x2)
         {
