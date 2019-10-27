@@ -54,6 +54,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -81,6 +82,7 @@
     <Compile Include="PdfElements\PdfStream.cs" />
     <Compile Include="PdfElements\PdfString.cs" />
     <Compile Include="PdfParser.cs" />
+    <Compile Include="PdfPageRenderer.cs" />
     <Compile Include="PdfStandar14FontMetrics.cs" />
     <Compile Include="PdfTextExtractor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

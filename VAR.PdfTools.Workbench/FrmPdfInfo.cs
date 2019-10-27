@@ -98,7 +98,7 @@ namespace VAR.PdfTools.Workbench
                     {
                         var fontNames = textElement.Childs.Select(c => c.Font == null ? "#NULL#" : c.Font.Name);
                         StringBuilder sbFontName = new StringBuilder();
-                        foreach(string fontNameAux in fontNames)
+                        foreach (string fontNameAux in fontNames)
                         {
                             if (sbFontName.Length > 0) { sbFontName.Append(";"); }
                             sbFontName.Append(fontNameAux);
@@ -248,7 +248,7 @@ namespace VAR.PdfTools.Workbench
             }
             txtOutput.Lines = columnData.ToArray();
         }
-        
+
         private void btnRender_Click(object sender, EventArgs e)
         {
             if (File.Exists(txtPdfPath.Text) == false)
@@ -256,8 +256,6 @@ namespace VAR.PdfTools.Workbench
                 MessageBox.Show("File does not exist");
                 return;
             }
-
-            int MaxSize = 10000;
 
             PdfDocument doc = PdfDocument.Load(txtPdfPath.Text);
             string baseDocumentPath = Path.GetDirectoryName(txtPdfPath.Text);
@@ -270,136 +268,18 @@ namespace VAR.PdfTools.Workbench
             int pageNumber = 1;
             foreach (PdfDocumentPage page in doc.Pages)
             {
-                double pageXMin = double.MaxValue;
-                double pageYMin = double.MaxValue;
-                double pageXMax = double.MinValue;
-                double pageYMax = double.MinValue;
+                PdfPageRenderer pdfPageRenderer = new PdfPageRenderer(page);
+                Bitmap bmp = pdfPageRenderer.Render();
 
-                // Preprocess page to get max size
-                PdfTextExtractor extractor = new PdfTextExtractor(page);
-                foreach (PdfTextElement textElement in extractor.Elements)
-                {
-                    double textElementXMin = textElement.GetX();
-                    double textElementYMax = textElement.GetY();
-                    double textElementXMax = textElementXMin + textElement.VisibleWidth;
-                    double textElementYMin = textElementYMax - textElement.VisibleHeight;
+                lines.Add(string.Format("Page {0:0000} TextElements : {1}", pageNumber, pdfPageRenderer.Extractor.Elements.Count));
 
-                    if (textElementXMax > pageXMax) { pageXMax = textElementXMax; }
-                    if (textElementYMax > pageYMax) { pageYMax = textElementYMax; }
-                    if (textElementXMin < pageXMin) { pageXMin = textElementXMin; }
-                    if (textElementYMin < pageYMin) { pageYMin = textElementYMin; }
-                }
-                lines.Add(string.Format("Page {0:0000} TextElements : {1}", pageNumber, extractor.Elements.Count));
-
-                // Prepare page image
-                int pageWidth = (int)Math.Ceiling(pageXMax - pageXMin);
-                int pageHeight = (int)Math.Ceiling(pageYMax - pageYMin);
-                int Scale = 10;
-                while ((pageWidth * Scale) > MaxSize) { Scale--; }
-                while ((pageHeight * Scale) > MaxSize) { Scale--; }
-                if (Scale <= 0) { Scale = 1; }
-                using (Bitmap bmp = new Bitmap(pageWidth * Scale, pageHeight * Scale, PixelFormat.Format32bppArgb))
-                using (Graphics gc = Graphics.FromImage(bmp))
-                using (Pen penTextElem = new Pen(Color.Blue))
-                {
-                    gc.Clear(Color.White);
-
-                    // Draw text elements
-                    foreach (PdfTextElement textElement in extractor.Elements)
-                    {
-                        DrawTextElement(textElement, gc, penTextElem, Scale, pageHeight, pageXMin, pageYMin);
-                    }
-
-                    // Save image to disk
-                    string fileName = Path.Combine(baseDocumentPath, string.Format("{0}_{1:0000}.png", baseDocumentFilename, pageNumber));
-                    bmp.Save(fileName, ImageFormat.Png);
-                }
+                // Save image to disk
+                string fileName = Path.Combine(baseDocumentPath, string.Format("{0}_{1:0000}.png", baseDocumentFilename, pageNumber));
+                bmp.Save(fileName, ImageFormat.Png);
                 pageNumber++;
             }
 
             txtOutput.Lines = lines.ToArray();
         }
-        
-        private static void DrawTextElement(PdfTextElement textElement, Graphics gc, Pen penTextElem, int Scale, int pageHeight, double pageXMin, double pageYMin)
-        {
-            double textElementX = textElement.GetX() - pageXMin;
-            double textElementY = textElement.GetY() - pageYMin;
-            double textElementWidth = textElement.VisibleWidth;
-            double textElementHeight = textElement.VisibleHeight;
-            string textElementText = textElement.VisibleText;
-            string textElementFontName = (textElement.Font == null ? string.Empty : textElement.Font.Name);
-
-            if (textElementHeight < 0.0001) { return; }
-
-            double textElementPageX = textElementX;
-            double textElementPageY = pageHeight - textElementY;
-            
-            DrawRoundedRectangle(gc, penTextElem,
-                (int)(textElementPageX * Scale),
-                (int)(textElementPageY * Scale),
-                (int)(textElementWidth * Scale),
-                (int)(textElementHeight * Scale),
-                5);
-            
-            using (Font font = new Font("Arial", (int)(textElementHeight * Scale), GraphicsUnit.Pixel))
-            {
-                foreach (PdfCharElement c in textElement.Characters)
-                {
-                    gc.DrawString(c.Char,
-                        font,
-                        Brushes.Black,
-                        (int)((textElementPageX + c.Displacement) * Scale),
-                        (int)(textElementPageY * Scale));
-                    gc.FillRectangle(Brushes.Red,
-                        (int)((textElementPageX + c.Displacement) * Scale),
-                        (int)(textElementPageY * Scale),
-                        2, 2);
-                    gc.FillRectangle(Brushes.Green,
-                        (int)((textElementPageX + c.Displacement + c.Width) * Scale),
-                        (int)(textElementPageY * Scale),
-                        2, 2);
-                }
-            }
-        }
-        
-        public static GraphicsPath RoundedRect(int x, int y, int width, int height, int radius)
-        {
-            int diameter = radius * 2;
-            Size size = new Size(diameter, diameter);
-            Rectangle arc = new Rectangle(x, y, diameter, diameter);
-            GraphicsPath path = new GraphicsPath();
-            
-            // top left arc 
-            path.AddArc(arc, 180, 90);
-
-            // top right arc  
-            arc.X = (x + width) - diameter;
-            path.AddArc(arc, 270, 90);
-
-            // bottom right arc  
-            arc.Y = (y + height) - diameter;
-            path.AddArc(arc, 0, 90);
-
-            // bottom left arc 
-            arc.X = x;
-            path.AddArc(arc, 90, 90);
-
-            path.CloseFigure();
-            return path;
-        }
-
-        public static void DrawRoundedRectangle(Graphics graphics, Pen pen, int x, int y, int width, int height, int cornerRadius)
-        {
-            if (graphics == null)
-                throw new ArgumentNullException("graphics");
-            if (pen == null)
-                throw new ArgumentNullException("pen");
-
-            using (GraphicsPath path = RoundedRect(x, y, width, height, cornerRadius))
-            {
-                graphics.DrawPath(pen, path);
-            }
-        }
-        
     }
 }

@@ -21,11 +21,11 @@ namespace VAR.PdfTools
         #endregion
 
         #region Properties
-        
+
         public PdfDictionary BaseData { get { return _baseData; } }
 
         public byte[] Content { get { return _content; } }
-        
+
         public Dictionary<string, PdfFont> Fonts { get { return _fonts; } }
 
         public List<PdfContentAction> ContentActions { get { return _contentActions; } }
@@ -69,7 +69,8 @@ namespace VAR.PdfTools
             {
                 PdfParser parser = new PdfParser(_content);
                 _contentActions = parser.ParseContent();
-            }else
+            }
+            else
             {
                 _contentActions = new List<PdfContentAction>();
             }
