@@ -47,6 +47,7 @@
             this.btnGetField3 = new System.Windows.Forms.Button();
             this.txtField3 = new System.Windows.Forms.TextBox();
             this.btnGetColumn3 = new System.Windows.Forms.Button();
+            this.txtPages = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // lblOutputs
@@ -237,11 +238,20 @@
             this.btnGetColumn3.UseVisualStyleBackColor = true;
             this.btnGetColumn3.Click += new System.EventHandler(this.btnGetColumn3_Click);
             // 
+            // txtPages
+            // 
+            this.txtPages.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtPages.Location = new System.Drawing.Point(397, 82);
+            this.txtPages.Name = "txtPages";
+            this.txtPages.Size = new System.Drawing.Size(75, 20);
+            this.txtPages.TabIndex = 27;
+            // 
             // FrmPdfInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(484, 461);
+            this.Controls.Add(this.txtPages);
             this.Controls.Add(this.btnHasText3);
             this.Controls.Add(this.btnGetField3);
             this.Controls.Add(this.txtField3);
@@ -291,5 +301,6 @@
         private System.Windows.Forms.Button btnGetField3;
         private System.Windows.Forms.TextBox txtField3;
         private System.Windows.Forms.Button btnGetColumn3;
+        private System.Windows.Forms.TextBox txtPages;
     }
 }
