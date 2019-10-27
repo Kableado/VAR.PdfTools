@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using VAR.PdfTools.Maths;
 
 namespace VAR.PdfTools
 {
@@ -9,9 +10,7 @@ namespace VAR.PdfTools
     {
         private PdfDocumentPage _page;
         private PdfTextExtractor _pdfTextExtractor;
-
-        private const int MaxSize = 10000;
-
+        
         public PdfTextExtractor Extractor { get { return _pdfTextExtractor; } }
 
         public PdfPageRenderer(PdfDocumentPage page)
@@ -24,36 +23,24 @@ namespace VAR.PdfTools
         {
             if (_pdfTextExtractor.Elements.Count == 0)
             {
+                // Nothing to render
                 Bitmap emptyBmp = new Bitmap(100, 200, PixelFormat.Format32bppArgb);
+                using (Graphics gc = Graphics.FromImage(emptyBmp))
+                    gc.Clear(Color.White);
                 return emptyBmp;
             }
 
-            double pageXMin = double.MaxValue;
-            double pageYMin = double.MaxValue;
-            double pageXMax = double.MinValue;
-            double pageYMax = double.MinValue;
-
-            // Preprocess page to get max size
-            foreach (PdfTextElement textElement in _pdfTextExtractor.Elements)
-            {
-                double textElementXMin = textElement.GetX();
-                double textElementYMax = textElement.GetY();
-                double textElementXMax = textElementXMin + textElement.VisibleWidth;
-                double textElementYMin = textElementYMax - textElement.VisibleHeight;
-
-                if (textElementXMax > pageXMax) { pageXMax = textElementXMax; }
-                if (textElementYMax > pageYMax) { pageYMax = textElementYMax; }
-                if (textElementXMin < pageXMin) { pageXMin = textElementXMin; }
-                if (textElementYMin < pageYMin) { pageYMin = textElementYMin; }
-            }
-
-            // Prepare page image
-            int pageWidth = (int)Math.Ceiling(pageXMax - pageXMin);
-            int pageHeight = (int)Math.Ceiling(pageYMax - pageYMin);
+            // Calculate page size and scale
+            Rect pageRect = _pdfTextExtractor.GetRect();
+            int pageWidth = (int)Math.Ceiling(pageRect.XMax - pageRect.XMin);
+            int pageHeight = (int)Math.Ceiling(pageRect.YMax - pageRect.YMin);
             int Scale = 10;
+            int MaxSize = 10000;
             while ((pageWidth * Scale) > MaxSize) { Scale--; }
-            while ((pageHeight * Scale) > MaxSize) { Scale--; }
+            while ((pageHeight * Scale) > MaxSize && Scale > 1) { Scale--; }
             if (Scale <= 0) { Scale = 1; }
+
+            // Draw page image
             Bitmap bmp = new Bitmap(pageWidth * Scale, pageHeight * Scale, PixelFormat.Format32bppArgb);
             using (Graphics gc = Graphics.FromImage(bmp))
             using (Pen penTextElem = new Pen(Color.Blue))
@@ -64,7 +51,7 @@ namespace VAR.PdfTools
                 // Draw text elements
                 foreach (PdfTextElement textElement in _pdfTextExtractor.Elements)
                 {
-                    DrawTextElement(textElement, gc, penTextElem, penCharElem, Scale, pageHeight, pageXMin, pageYMin, Brushes.Black);
+                    DrawTextElement(textElement, gc, penTextElem, penCharElem, Scale, pageHeight, pageRect.XMin, pageRect.YMin, Brushes.Black);
                 }
             }
             return bmp;
