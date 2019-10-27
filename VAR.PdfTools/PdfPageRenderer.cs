@@ -10,7 +10,14 @@ namespace VAR.PdfTools
     {
         private PdfDocumentPage _page;
         private PdfTextExtractor _pdfTextExtractor;
-        
+        private Rect _pageRect;
+        private int _pageWidth;
+        private int _pageHeight;
+        private int _scale = 10;
+
+        private const int MaxSize = 10000;
+
+
         public PdfTextExtractor Extractor { get { return _pdfTextExtractor; } }
 
         public PdfPageRenderer(PdfDocumentPage page)
@@ -19,45 +26,92 @@ namespace VAR.PdfTools
             _pdfTextExtractor = new PdfTextExtractor(_page);
         }
 
+        public PdfPageRenderer(PdfTextExtractor pdfTextExtractor)
+        {
+            _pdfTextExtractor = pdfTextExtractor;
+            _page = pdfTextExtractor.Page;
+
+
+            // Calculate page size and scale
+            _pageRect = _pdfTextExtractor.GetRect();
+            _pageWidth = (int)Math.Ceiling(_pageRect.XMax - _pageRect.XMin);
+            _pageHeight = (int)Math.Ceiling(_pageRect.YMax - _pageRect.YMin);
+            while ((_pageWidth * _scale) > MaxSize) { _scale--; }
+            while ((_pageHeight * _scale) > MaxSize) { _scale--; }
+            if (_scale <= 0) { _scale = 1; }
+        }
+
         public Bitmap Render()
         {
             if (_pdfTextExtractor.Elements.Count == 0)
             {
                 // Nothing to render
                 Bitmap emptyBmp = new Bitmap(100, 200, PixelFormat.Format32bppArgb);
-                using (Graphics gc = Graphics.FromImage(emptyBmp))
-                    gc.Clear(Color.White);
+                using (Graphics gcEmpty = Graphics.FromImage(emptyBmp))
+                    gcEmpty.Clear(Color.White);
                 return emptyBmp;
             }
 
-            // Calculate page size and scale
-            Rect pageRect = _pdfTextExtractor.GetRect();
-            int pageWidth = (int)Math.Ceiling(pageRect.XMax - pageRect.XMin);
-            int pageHeight = (int)Math.Ceiling(pageRect.YMax - pageRect.YMin);
-            int Scale = 10;
-            int MaxSize = 10000;
-            while ((pageWidth * Scale) > MaxSize) { Scale--; }
-            while ((pageHeight * Scale) > MaxSize && Scale > 1) { Scale--; }
-            if (Scale <= 0) { Scale = 1; }
+            // Prepare image
+            Bitmap bmp = new Bitmap(_pageWidth * _scale, _pageHeight * _scale, PixelFormat.Format32bppArgb);
+            Graphics gc = Graphics.FromImage(bmp);
+            gc.Clear(Color.White);
 
-            // Draw page image
-            Bitmap bmp = new Bitmap(pageWidth * Scale, pageHeight * Scale, PixelFormat.Format32bppArgb);
-            using (Graphics gc = Graphics.FromImage(bmp))
+            // Draw text elements of the page
             using (Pen penTextElem = new Pen(Color.Blue))
             using (Pen penCharElem = new Pen(Color.Navy))
             {
-                gc.Clear(Color.White);
-
-                // Draw text elements
                 foreach (PdfTextElement textElement in _pdfTextExtractor.Elements)
                 {
-                    DrawTextElement(textElement, gc, penTextElem, penCharElem, Scale, pageHeight, pageRect.XMin, pageRect.YMin, Brushes.Black);
+                    DrawTextElement(textElement, gc, penTextElem, penCharElem, _scale, _pageHeight, _pageRect.XMin, _pageRect.YMin, Brushes.Black);
                 }
             }
+
+            gc.Dispose();
             return bmp;
         }
 
-        private static void DrawTextElement(PdfTextElement textElement, Graphics gc, Pen penTextElem, Pen penCharElem, int Scale, int pageHeight, double pageXMin, double pageYMin, Brush brushText)
+        public Bitmap RenderColumn(PdfTextElementColumn columnData, Bitmap bmp = null)
+        {
+            Graphics gc;
+            if (bmp == null)
+            {
+                bmp = new Bitmap(_pageWidth * _scale, _pageHeight * _scale, PixelFormat.Format32bppArgb);
+                gc = Graphics.FromImage(bmp);
+                gc.Clear(Color.White);
+            }
+            else
+            {
+                gc = Graphics.FromImage(bmp);
+            }
+
+            // Draw text elements of the column
+            using (Pen penTextElem = new Pen(Color.Red))
+            using (Pen penCharElem = new Pen(Color.DarkRed))
+            {
+                foreach (PdfTextElement textElement in columnData.Elements)
+                {
+                    DrawTextElement(textElement, gc, penTextElem, penCharElem, _scale, _pageHeight, _pageRect.XMin, _pageRect.YMin, Brushes.OrangeRed);
+                }
+            }
+
+            // Draw column extents
+            using (Pen penColumn = new Pen(Color.Red))
+            {
+                float y = (float)(_pageRect.YMax - columnData.Y);
+                float x1 = (float)(columnData.X1 - _pageRect.XMin);
+                float x2 = (float)(columnData.X2 - _pageRect.XMin);
+
+                gc.DrawLine(penColumn, x1 * _scale, y * _scale, x2 * _scale, y * _scale);
+                gc.DrawLine(penColumn, x1 * _scale, y * _scale, x1 * _scale, _pageHeight * _scale);
+                gc.DrawLine(penColumn, x2 * _scale, y * _scale, x2 * _scale, _pageHeight * _scale);
+            }
+
+            gc.Dispose();
+            return bmp;
+        }
+
+        private static void DrawTextElement(PdfTextElement textElement, Graphics gc, Pen penTextElem, Pen penCharElem, int scale, int pageHeight, double pageXMin, double pageYMin, Brush brushText)
         {
             double textElementX = textElement.GetX() - pageXMin;
             double textElementY = textElement.GetY() - pageYMin;
@@ -74,29 +128,29 @@ namespace VAR.PdfTools
             if (penTextElem != null)
             {
                 DrawRoundedRectangle(gc, penTextElem,
-                    (int)(textElementPageX * Scale),
-                    (int)(textElementPageY * Scale),
-                    (int)(textElementWidth * Scale),
-                    (int)(textElementHeight * Scale),
+                    (int)(textElementPageX * scale),
+                    (int)(textElementPageY * scale),
+                    (int)(textElementWidth * scale),
+                    (int)(textElementHeight * scale),
                     5);
             }
 
-            using (Font font = new Font("Arial", (int)(textElementHeight * Scale), GraphicsUnit.Pixel))
+            using (Font font = new Font("Arial", (int)(textElementHeight * scale), GraphicsUnit.Pixel))
             {
                 foreach (PdfCharElement c in textElement.Characters)
                 {
                     gc.DrawString(c.Char,
                         font,
                         brushText,
-                        (int)((textElementPageX + c.Displacement) * Scale),
-                        (int)(textElementPageY * Scale));
+                        (int)((textElementPageX + c.Displacement) * scale),
+                        (int)(textElementPageY * scale));
                     if (penCharElem != null)
                     {
                         DrawRoundedRectangle(gc, penCharElem,
-                            (int)((textElementPageX + c.Displacement) * Scale),
-                            (int)(textElementPageY * Scale),
-                            (int)(c.Width * Scale),
-                            (int)(textElementHeight * Scale),
+                            (int)((textElementPageX + c.Displacement) * scale),
+                            (int)(textElementPageY * scale),
+                            (int)(c.Width * scale),
+                            (int)(textElementHeight * scale),
                             5);
                     }
                 }

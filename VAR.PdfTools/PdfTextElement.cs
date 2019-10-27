@@ -103,4 +103,28 @@ namespace VAR.PdfTools
         #endregion
     }
 
+    public class PdfTextElementColumn
+    {
+        public PdfTextElement HeadTextElement { get; private set; }
+
+        public IEnumerable<PdfTextElement> Elements { get; private set; }
+
+        public double Y { get; private set; }
+
+        public double X1 { get; private set; }
+        public double X2 { get; private set; }
+
+        public static PdfTextElementColumn Empty { get; } = new PdfTextElementColumn();
+
+        private PdfTextElementColumn() { }
+
+        public PdfTextElementColumn(PdfTextElement head, IEnumerable<PdfTextElement> elements, double y, double x1, double x2)
+        {
+            HeadTextElement = head;
+            Elements = elements;
+            Y = y;
+            X1 = x1;
+            X2 = x2;
+        }
+    }
 }

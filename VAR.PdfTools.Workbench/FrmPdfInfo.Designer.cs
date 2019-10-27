@@ -48,6 +48,7 @@
             this.txtField3 = new System.Windows.Forms.TextBox();
             this.btnGetColumn3 = new System.Windows.Forms.Button();
             this.txtPages = new System.Windows.Forms.TextBox();
+            this.chkRender = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // lblOutputs
@@ -120,7 +121,7 @@
             // 
             this.btnGetColumn1.Location = new System.Drawing.Point(292, 51);
             this.btnGetColumn1.Name = "btnGetColumn1";
-            this.btnGetColumn1.Size = new System.Drawing.Size(60, 23);
+            this.btnGetColumn1.Size = new System.Drawing.Size(69, 23);
             this.btnGetColumn1.TabIndex = 12;
             this.btnGetColumn1.Text = "GetColumn";
             this.btnGetColumn1.UseVisualStyleBackColor = true;
@@ -195,7 +196,7 @@
             // 
             this.btnGetColumn2.Location = new System.Drawing.Point(292, 80);
             this.btnGetColumn2.Name = "btnGetColumn2";
-            this.btnGetColumn2.Size = new System.Drawing.Size(60, 23);
+            this.btnGetColumn2.Size = new System.Drawing.Size(69, 23);
             this.btnGetColumn2.TabIndex = 19;
             this.btnGetColumn2.Text = "GetColumn";
             this.btnGetColumn2.UseVisualStyleBackColor = true;
@@ -232,7 +233,7 @@
             // 
             this.btnGetColumn3.Location = new System.Drawing.Point(292, 109);
             this.btnGetColumn3.Name = "btnGetColumn3";
-            this.btnGetColumn3.Size = new System.Drawing.Size(60, 23);
+            this.btnGetColumn3.Size = new System.Drawing.Size(69, 23);
             this.btnGetColumn3.TabIndex = 23;
             this.btnGetColumn3.Text = "GetColumn";
             this.btnGetColumn3.UseVisualStyleBackColor = true;
@@ -246,11 +247,22 @@
             this.txtPages.Size = new System.Drawing.Size(75, 20);
             this.txtPages.TabIndex = 27;
             // 
+            // chkRender
+            // 
+            this.chkRender.AutoSize = true;
+            this.chkRender.Location = new System.Drawing.Point(292, 138);
+            this.chkRender.Name = "chkRender";
+            this.chkRender.Size = new System.Drawing.Size(61, 17);
+            this.chkRender.TabIndex = 28;
+            this.chkRender.Text = "Render";
+            this.chkRender.UseVisualStyleBackColor = true;
+            // 
             // FrmPdfInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(484, 461);
+            this.Controls.Add(this.chkRender);
             this.Controls.Add(this.txtPages);
             this.Controls.Add(this.btnHasText3);
             this.Controls.Add(this.btnGetField3);
@@ -302,5 +314,6 @@
         private System.Windows.Forms.TextBox txtField3;
         private System.Windows.Forms.Button btnGetColumn3;
         private System.Windows.Forms.TextBox txtPages;
+        private System.Windows.Forms.CheckBox chkRender;
     }
 }

@@ -651,7 +651,7 @@ namespace VAR.PdfTools
         #endregion
 
         #region Public methods
-        
+
         public Rect GetRect()
         {
             Rect rect = null;
@@ -664,12 +664,12 @@ namespace VAR.PdfTools
             return rect;
         }
 
-        public List<string> GetColumnAsStrings(string column, bool fuzzy =true)
+        public PdfTextElementColumn GetColumn(string column, bool fuzzy = true)
         {
             PdfTextElement columnHead = FindElementByText(column, fuzzy);
             if (columnHead == null)
             {
-                return new List<string>();
+                return PdfTextElementColumn.Empty;
             }
             double headY = columnHead.GetY();
             double headX1 = columnHead.GetX();
@@ -717,25 +717,34 @@ namespace VAR.PdfTools
             columnDataRaw = columnDataRaw.OrderByDescending(elem => elem.GetY()).ToList();
 
             // Only items completelly inside extents, and break on the first element outside
-            var columnData = new List<PdfTextElement>();
+            var columnElements = new List<PdfTextElement>();
             foreach (PdfTextElement elem in columnDataRaw)
             {
                 double elemX1 = elem.GetX();
                 double elemX2 = elemX1 + elem.VisibleWidth;
                 if (elemX1 < extentX1 || elemX2 > extentX2) { break; }
 
-                columnData.Add(elem);
+                columnElements.Add(elem);
             }
+
+            var columnData = new PdfTextElementColumn(columnHead, columnElements, headY, extentX1, extentX2);
+
+            return columnData;
+        }
+
+        public List<string> GetColumnAsStrings(string column, bool fuzzy = true)
+        {
+            PdfTextElementColumn columnData = GetColumn(column, fuzzy);
 
             // Emit result
             var result = new List<string>();
-            foreach (PdfTextElement elem in columnData)
+            foreach (PdfTextElement elem in columnData.Elements)
             {
                 result.Add(elem.VisibleText);
             }
             return result;
         }
-        
+
         public string GetFieldAsString(string field, bool fuzzy = true)
         {
             PdfTextElement fieldTitle = FindElementByText(field, fuzzy);
@@ -763,7 +772,7 @@ namespace VAR.PdfTools
 
             return fieldData.OrderBy(elem => elem.GetX()).FirstOrDefault().VisibleText;
         }
-        
+
         public bool HasText(string text, bool fuzzy = true)
         {
             List<PdfTextElement> list = FindElementsContainingText(text, fuzzy);
