@@ -313,7 +313,19 @@ namespace VAR.PdfTools.Workbench
                 pageNum++;
                 if (selectedPages.Contains(pageNum) == false) { continue; }
                 PdfTextExtractor extractor = new PdfTextExtractor(page);
-                PdfTextElementColumn columnData = extractor.GetColumn(column);
+                PdfTextElementColumn columnData;
+                if (column.StartsWith("#"))
+                {
+                    string[] columnParts = column.Substring(1).Split(';');
+                    double y = Convert.ToDouble(columnParts[0]);
+                    double x1 = Convert.ToDouble(columnParts[1]);
+                    double x2 = Convert.ToDouble(columnParts[2]);
+                    columnData = extractor.GetColumn(null, y, x1, x2, x1, x2);
+                }
+                else
+                {
+                    columnData = extractor.GetColumn(column);
+                }
                 if (chkRender.Checked)
                 {
                     var pdfPageRenderer = new PdfPageRenderer(extractor);
