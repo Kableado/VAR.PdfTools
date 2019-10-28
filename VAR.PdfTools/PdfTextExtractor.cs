@@ -170,6 +170,14 @@ namespace VAR.PdfTools
             return list;
         }
 
+        private bool TextElementVerticalIntersection(PdfTextElement elem1, double elem2X1, double elem2X2)
+        {
+            double elem1X1 = elem1.GetX();
+            double elem1X2 = elem1.GetX() + elem1.VisibleWidth;
+
+            return elem1X2 >= elem2X1 && elem2X2 >= elem1X1;
+        }
+
         private bool TextElementVerticalIntersection(PdfTextElement elem1, PdfTextElement elem2)
         {
             double elem1X1 = elem1.GetX();
@@ -699,14 +707,20 @@ namespace VAR.PdfTools
                         extentX2 = elemX1;
                     }
                 }
-
             }
 
+            PdfTextElementColumn columnData = GetColumn(columnHead, headY, headX1, headX2, extentX1, extentX2);
+
+            return columnData;
+        }
+
+        public PdfTextElementColumn GetColumn(PdfTextElement columnHead, double headY, double headX1, double headX2, double extentX1, double extentX2)
+        {
             // Get all the elements that intersects vertically, are down and sort results
             var columnDataRaw = new List<PdfTextElement>();
             foreach (PdfTextElement elem in _textElements)
             {
-                if (TextElementVerticalIntersection(columnHead, elem) == false) { continue; }
+                if (TextElementVerticalIntersection(elem, headX1, headX2) == false) { continue; }
 
                 // Only intems down the column
                 double elemY = elem.GetY();
@@ -716,19 +730,77 @@ namespace VAR.PdfTools
             }
             columnDataRaw = columnDataRaw.OrderByDescending(elem => elem.GetY()).ToList();
 
-            // Only items completelly inside extents, and break on the first element outside
+            // Only items completelly inside extents, try spliting big elements and break on big elements that can't be splitted
             var columnElements = new List<PdfTextElement>();
             foreach (PdfTextElement elem in columnDataRaw)
             {
                 double elemX1 = elem.GetX();
                 double elemX2 = elemX1 + elem.VisibleWidth;
-                if (elemX1 < extentX1 || elemX2 > extentX2) { break; }
 
-                columnElements.Add(elem);
+                // Add elements completely inside
+                if (elemX1 > extentX1 && elemX2 < extentX2)
+                {
+                    columnElements.Add(elem);
+                    continue;
+                }
+
+                // Try to split elements intersecting extents of the column
+                double maxSpacing = elem.Characters.Average(c => c.Width) / 10;
+                int indexStart = 0;
+                int indexEnd = elem.Characters.Count - 1;
+                bool indexStartValid = true;
+                bool indexEndValid = true;
+                if (elemX1 < extentX1)
+                {
+                    // Search best start
+                    int index = 0;
+                    double characterPosition = elemX1 + elem.Characters[index].Displacement;
+                    while (characterPosition < extentX1 && index < (elem.Characters.Count - 1))
+                    {
+                        index++;
+                        characterPosition = elemX1 + elem.Characters[index].Displacement;
+                    }
+                    double spacing = elem.GetCharacterPreviousSpacing(index);
+                    while (spacing < maxSpacing && index < (elem.Characters.Count - 1))
+                    {
+                        index++;
+                        spacing = elem.GetCharacterPreviousSpacing(index);
+                    }
+                    if (spacing < maxSpacing) { indexStartValid = false; }
+                    indexStart = index;
+                }
+
+                if (elemX2 > extentX2)
+                {
+                    // Search best end
+                    int index = elem.Characters.Count - 1;
+                    double characterPosition = elemX1 + elem.Characters[index].Displacement + elem.Characters[index].Width;
+                    while (characterPosition > extentX2 && index > 0)
+                    {
+                        index--;
+                        characterPosition = elemX1 + elem.Characters[index].Displacement + elem.Characters[index].Width;
+                    }
+                    double spacing = elem.GetCharacterPrecedingSpacing(index);
+                    while (spacing < maxSpacing && index > 0)
+                    {
+                        index--;
+                        spacing = elem.GetCharacterPrecedingSpacing(index);
+                    }
+                    if (spacing < maxSpacing) { indexEndValid = false; }
+                    indexEnd = index;
+                }
+
+                // Break when there is no good split, spaning all extent
+                if (indexStartValid == false && indexEndValid == false) { break; }
+
+                // Continue when only one of the sides is invalid. (outside elements intersecting extents of the column)
+                if (indexStartValid == false || indexEndValid == false) { continue; }
+
+                // Add splitted element
+                columnElements.Add(elem.SubPart(indexStart, indexEnd + 1));
             }
 
             var columnData = new PdfTextElementColumn(columnHead, columnElements, headY, extentX1, extentX2);
-
             return columnData;
         }
 

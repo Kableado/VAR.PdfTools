@@ -100,6 +100,22 @@ namespace VAR.PdfTools
             };
         }
 
+        public double GetCharacterPreviousSpacing(int index)
+        {
+            if (index <= 0) { return 0; }
+            double previousEnd = Characters[index - 1].Displacement + Characters[index - 1].Width;
+            double spacing = Characters[index].Displacement - previousEnd;
+            return spacing;
+        }
+
+        public double GetCharacterPrecedingSpacing(int index)
+        {
+            if (index >= (Characters.Count - 1)) { return 0; }
+            double currentEnd = Characters[index].Displacement + Characters[index].Width;
+            double spacing = Characters[index + 1].Displacement - currentEnd;
+            return spacing;
+        }
+
         #endregion
     }
 
