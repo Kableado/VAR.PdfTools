@@ -38,26 +38,50 @@ namespace VAR.PdfTools
         
         private static void ApplyFilterToStream(PdfStream stream, string filter)
         {
-            if (filter == "FlateDecode")
+            if(filter == "ASCIIHexDecode")
+            {
+                // TODO: Implement ASCIIHexDecode Filter
+            }
+            else if (filter == "ASCII85Decode" || filter == "A85")
+            {
+                // TODO: Implement ASCII85Decode Filter
+            }
+            else if (filter == "LZWDecode")
+            {
+                // TODO: Implement LZWDecode Filter
+            }
+            else if (filter == "FlateDecode")
             {
                 byte[] decodedStreamData = PdfFilters.FlateDecode.Decode(stream.Data);
                 stream.Data = decodedStreamData;
             }
-            else if (filter == "ASCII85Decode" || filter == "A85")
+            else if (filter == "RunLengthDecode")
             {
-                // FIXME: Implement this filter
+                // TODO: Implement RunLengthDecode Filter
             }
             else if (filter == "CCITTFaxDecode")
             {
-                // FIXME: Implement this filter
+                // TODO: Implement CCITTFaxDecode Filter
+            }
+            else if (filter == "JBIG2Decode")
+            {
+                // TODO: Implement JBIG2Decode Filter
             }
             else if (filter == "DCTDecode")
             {
-                // FIXME: Implement this filter
+                // TODO: Implement DCTDecode Filter
+            }
+            else if (filter == "JPXDecode")
+            {
+                // TODO: Implement JPXDecode Filter
+            }
+            else if (filter == "Crypt")
+            {
+                // TODO: Implement Crypt Filter
             }
             else
             {
-                // FIXME: Implement the rest of filters
+                // TODO: Handle unknown filters
             }
         }
 

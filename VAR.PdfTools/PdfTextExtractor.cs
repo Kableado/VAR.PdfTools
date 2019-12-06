@@ -370,7 +370,7 @@ namespace VAR.PdfTools
                 }
                 else if (action.Token == "Tz")
                 {
-                    // FIXME: Horizontal Scale
+                    // TODO: PdfTextExtractor: Horizontal Scale
                 }
                 else if (action.Token == "Tf")
                 {
@@ -385,11 +385,11 @@ namespace VAR.PdfTools
                 }
                 else if (action.Token == "Tr")
                 {
-                    // FIXME: Rendering mode
+                    // TODO: PdfTextExtractor: Rendering mode
                 }
                 else if (action.Token == "Ts")
                 {
-                    // FIXME: Text rise
+                    // TODO: PdfTextExtractor: Text rise
                 }
                 else if (action.Token == "Td")
                 {
@@ -444,82 +444,82 @@ namespace VAR.PdfTools
                 }
                 else if (action.Token == "re")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "f")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "g")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "rg")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "BI")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "ID")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "EI")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "W")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "n")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "Do")
                 {
-                    // FIXME: Interpret this
+                    // TODO: PdfTextExtractor: Interpret this
                 }
                 else if (action.Token == "m")
                 {
-                    // FIXME: Interpret this "moveto: Begin new subpath"
+                    // TODO: PdfTextExtractor: Interpret this "moveto: Begin new subpath"
                 }
                 else if (action.Token == "l")
                 {
-                    // FIXME: Interpret this "lineto: Append straight line segment to path"
+                    // TODO: PdfTextExtractor: Interpret this "lineto: Append straight line segment to path"
                     lineCount++;
                 }
                 else if (action.Token == "h")
                 {
-                    // FIXME: Interpret this "closepath: Close subpath"
+                    // TODO: PdfTextExtractor: Interpret this "closepath: Close subpath"
                     pathCount++;
                 }
                 else if (action.Token == "W")
                 {
-                    // FIXME: Interpret this "clip: Set clipping path using nonzero winding number rule"
+                    // TODO: PdfTextExtractor: Interpret this "clip: Set clipping path using nonzero winding number rule"
                 }
                 else if (action.Token == "W*")
                 {
-                    // FIXME: Interpret this "eoclip: Set clipping path using even-odd rule"
+                    // TODO: PdfTextExtractor: Interpret this "eoclip: Set clipping path using even-odd rule"
                 }
                 else if (action.Token == "w")
                 {
-                    // FIXME: Interpret this "setlinewidth: Set line width"
+                    // TODO: PdfTextExtractor: Interpret this "setlinewidth: Set line width"
                 }
                 else if (action.Token == "G")
                 {
-                    // FIXME: Interpret this "setgray: Set gray level for stroking operations"
+                    // TODO: PdfTextExtractor: Interpret this "setgray: Set gray level for stroking operations"
                 }
                 else if (action.Token == "S")
                 {
-                    // FIXME: Interpret this "stroke: Stroke path"
+                    // TODO: PdfTextExtractor: Interpret this "stroke: Stroke path"
                     strokeCount++;
                 }
                 else if (action.Token == "M")
                 {
-                    // FIXME: Interpret this "setmiterlimit: Set miter limit"
+                    // TODO: PdfTextExtractor: Interpret this "setmiterlimit: Set miter limit"
                 }
                 else
                 {

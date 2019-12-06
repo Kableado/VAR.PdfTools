@@ -79,7 +79,7 @@ namespace VAR.PdfTools
 
         private void ParseSizes()
         {
-            double glyphSpaceToTextSpace = 1000.0; // FIXME: SubType:Type3 Uses a FontMatrix that may not correspond to 1/1000th
+            double glyphSpaceToTextSpace = 1000.0; // TODO: PdfFont.ParseSizes: SubType:Type3 Uses a FontMatrix that may not correspond to 1/1000th
             _widths = new Dictionary<char, double>();
             char firstChar = (char)_baseData.GetParamAsInt("FirstChar");
             char lastChar = (char)_baseData.GetParamAsInt("LastChar");
@@ -177,7 +177,7 @@ namespace VAR.PdfTools
         {
             if (_toUnicode == null)
             {
-                // FIXME: use standar tables
+                // TODO: PdfFont.ToUnicode: use standar tables
                 return new string(character, 1);
             }
 

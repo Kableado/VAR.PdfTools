@@ -852,7 +852,7 @@ namespace VAR.PdfTools
                     string token = ParseToken();
                     if (token == "startxref")
                     {
-                        // FIXME: Ignoring startxref for now
+                        // TODO: PdfParser: Ignoring startxref for now
                         SkipEndOfLine();
                         SkipToEndOfLine();
                         SkipEndOfLine();
@@ -863,7 +863,7 @@ namespace VAR.PdfTools
                     }
                     if (token == "xref")
                     {
-                        // FIXME: Ignoring xref for now
+                        // TODO: PdfParser: Ignoring xref for now
                         SkipToEndOfLine();
                         SkipEndOfLine();
                         do
@@ -891,7 +891,7 @@ namespace VAR.PdfTools
                     }
                     if (token == "trailer")
                     {
-                        // FIXME: Ignoring trailer for now
+                        // TODO: PdfParser: Ignoring trailer for now
                         SkipEndOfLine();
                         ParseElement();
                         SkipWhitespace();
