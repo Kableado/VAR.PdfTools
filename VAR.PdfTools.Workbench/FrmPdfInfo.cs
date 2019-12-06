@@ -333,6 +333,8 @@ namespace VAR.PdfTools.Workbench
                     pdfPageRenderer.RenderColumn(columnData, bmp);
                     string fileName = Path.Combine(baseDocumentPath, string.Format("{0}_{1:0000}.png", baseDocumentFilename, pageNum));
                     bmp.Save(fileName, ImageFormat.Png);
+                    bmp.Dispose();
+                    GC.Collect();
                 }
                 columns.AddRange(columnData.Elements.Select(t => t.VisibleText));
             }
@@ -370,6 +372,8 @@ namespace VAR.PdfTools.Workbench
                 // Save image to disk
                 string fileName = Path.Combine(baseDocumentPath, string.Format("{0}_{1:0000}.png", baseDocumentFilename, pageNum));
                 bmp.Save(fileName, ImageFormat.Png);
+                bmp.Dispose();
+                GC.Collect();
             }
 
             txtOutput.Lines = lines.ToArray();
