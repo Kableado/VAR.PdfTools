@@ -29,3 +29,5 @@ _ReSharper*/
 *.nupkg
 
 .vs
+PDFTests
+Doc
