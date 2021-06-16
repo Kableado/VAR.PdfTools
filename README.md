@@ -37,11 +37,9 @@ Or the content of a field (text on the right of the indicated text):
 It is a simple Windows.Forms application, to test basic funcitionallity of the library.
 
 ## Building
-A Visual Studio 2015 and 2010 solutions are provided. Simply, click build on the IDE.
+A Visual Studio solution is provided. Simply, click build on the IDE.
 
-A .nuget package can be build using:
-
-    VAR.PdfTools\Build.NuGet.cmd
+The build generates a DLL and a Nuget package.
 
 ## Contributing
 1. Fork it!
