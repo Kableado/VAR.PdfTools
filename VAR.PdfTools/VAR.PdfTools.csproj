@@ -1,110 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EB7E003A-6A95-4002-809F-926C7C8A11E9}</ProjectGuid>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VAR.PdfTools</RootNamespace>
-    <AssemblyName>VAR.PdfTools</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug .Net 4.6.1|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\net461</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <LangVersion>6</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release .Net 4.6.1|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\net461</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug .Net 3.5|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\net35</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release .Net 3.5|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\net35</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  <PropertyGroup>
+    <PackageId>VAR.PdfTools</PackageId>
+    <Title>VAR.PdfTools</Title>
+    <Version>1.6.1</Version>
+    <Description>PdfTools Library</Description>
+    <Authors>VAR</Authors>
+    <Company>VAR</Company>
+    <Copyright>Copyright © VAR 2016-2019</Copyright>
+    <RequireLicenseAcceptance>false</RequireLicenseAcceptance>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/Kableado/VAR.PdfTools</PackageProjectUrl>
+    <PackageTags>PDF;PDF Library</PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Content Include="..\LICENSE.txt" Link="LICENSE.txt" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Maths\Matrix3x3.cs" />
-    <Compile Include="Maths\Rect.cs" />
-    <Compile Include="PdfContentAction.cs" />
-    <Compile Include="PdfDocument.cs" />
-    <Compile Include="PdfDocumentPage.cs" />
-    <Compile Include="PdfElements\IPdfElement.cs" />
-    <Compile Include="PdfElements\PdfArray.cs" />
-    <Compile Include="PdfElements\PdfBoolean.cs" />
-    <Compile Include="PdfElements\PdfDictionary.cs" />
-    <Compile Include="PdfElements\PdfElementTypes.cs" />
-    <Compile Include="PdfElements\PdfElementUtils.cs" />
-    <Compile Include="PdfFilters.cs" />
-    <Compile Include="PdfFont.cs" />
-    <Compile Include="PdfElements\PdfInteger.cs" />
-    <Compile Include="PdfElements\PdfName.cs" />
-    <Compile Include="PdfElements\PdfNull.cs" />
-    <Compile Include="PdfElements\PdfObject.cs" />
-    <Compile Include="PdfElements\PdfObjectReference.cs" />
-    <Compile Include="PdfElements\PdfReal.cs" />
-    <Compile Include="PdfElements\PdfStream.cs" />
-    <Compile Include="PdfElements\PdfString.cs" />
-    <Compile Include="PdfParser.cs" />
-    <Compile Include="PdfPageRenderer.cs" />
-    <Compile Include="PdfStandar14FontMetrics.cs" />
-    <Compile Include="PdfTextElement.cs" />
-    <Compile Include="PdfTextExtractor.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Maths\Vector3D.cs" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="NuGet\keep.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Build.NuGet.cmd" />
-    <None Include="packages.config" />
-    <None Include="VAR.PdfTools.nuspec" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="Nuget\" />
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
